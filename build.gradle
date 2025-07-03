@@ -29,7 +29,7 @@ jib {
         }
     }
     to {
-        image = "ghcr.io/bi_2025_summer_team2/greenmate_be:latest"
+        image = "ghcr.io/bi-2025-summer-team2/greenmate-be:latest"
         auth {
             username = System.getenv("DOCKER_USERNAME") ?: ""
             password = System.getenv("DOCKER_PASSWORD") ?: ""
