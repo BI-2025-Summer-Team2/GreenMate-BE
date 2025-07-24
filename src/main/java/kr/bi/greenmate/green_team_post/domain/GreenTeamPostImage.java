@@ -10,7 +10,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -29,22 +28,14 @@ import lombok.NoArgsConstructor;
 public class GreenTeamPostImage {
 
   @Id
-  @SequenceGenerator(
-      name = "greenTeamPostImageSeq",
-      sequenceName = "GREEN_TEAM_POST_IMAGE_SEQ",
-      allocationSize = 1
-  )
-  @GeneratedValue(
-      strategy = GenerationType.SEQUENCE,
-      generator = "greenTeamPostImageSeq"
-  )
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "post_id", nullable = false)
   private GreenTeamPost post;
 
-  @Column(name = "image_url", nullable = false, length = 64)
+  @Column(name = "image_url", nullable = false, length = 63)
   private String imageUrl;
 
   @CreationTimestamp

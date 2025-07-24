@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 
 import org.hibernate.annotations.CreationTimestamp;
@@ -39,19 +38,11 @@ import kr.bi.greenmate.user.domain.User;
 public class GreenTeamPost {
 
   @Id
-  @SequenceGenerator(
-      name = "greenTeamPostSeq",
-      sequenceName = "GREEN_TEAM_POST_SEQ",
-      allocationSize = 1
-  )
-  @GeneratedValue(
-      strategy = GenerationType.SEQUENCE,
-      generator = "greenTeamPostSeq"
-  )
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = true)
-  @JoinColumn(name = "user_id", nullable = true)
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
   @Column(nullable = false, length = 50)
