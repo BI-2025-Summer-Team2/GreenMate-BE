@@ -19,14 +19,12 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import kr.bi.greenmate.common.domain.BaseTimeEntity;
 import kr.bi.greenmate.user.domain.User;
 
 @Entity
@@ -35,7 +33,7 @@ import kr.bi.greenmate.user.domain.User;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GreenTeamPost {
+public class GreenTeamPost extends BaseTimeEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -79,14 +77,6 @@ public class GreenTeamPost {
 
   @Column(name = "deadline_at", nullable = false)
   private LocalDateTime deadlineAt;
-
-  @CreationTimestamp
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private LocalDateTime createdAt;
-
-  @UpdateTimestamp
-  @Column(name = "updated_at", nullable = false)
-  private LocalDateTime updatedAt;
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<GreenTeamPostImage> images = new ArrayList<>();
