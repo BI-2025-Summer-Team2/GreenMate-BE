@@ -43,18 +43,18 @@ public class GreenTeamPost extends BaseTimeEntity {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(nullable = false, length = 50)
+  @Column(name = "title", nullable = false, length = 50)
   private String title;
 
-  @Column(nullable = false, length = 4000)
+  @Column(name = "content", nullable = false, length = 4000)
   private String content;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "location_type", length = 10)
+  @Column(name = "location_type", nullable = false, length = 10)
   private LocationType locationType;
 
   @Lob
-  @Column(name = "location_geojson")
+  @Column(name = "location_geojson", nullable = false)
   private String locationGeojson;
 
   @Column(name = "max_participants", nullable = false)
