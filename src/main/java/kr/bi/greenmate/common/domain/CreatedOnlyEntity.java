@@ -11,6 +11,6 @@ import lombok.Getter;
 public abstract class CreatedOnlyEntity {
 
   @CreationTimestamp
-  @Column(name = "created_at", nullable = false, updatable = false)
+  @Column(nullable = false, updatable = false)
   protected LocalDateTime createdAt;
 }

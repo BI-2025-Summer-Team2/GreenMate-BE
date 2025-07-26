@@ -11,6 +11,6 @@ import lombok.Getter;
 public abstract class BaseTimeEntity extends CreatedOnlyEntity {
 
   @UpdateTimestamp
-  @Column(name = "updated_at", nullable = false)
+  @Column(nullable = false)
   protected LocalDateTime updatedAt;
 }

@@ -17,7 +17,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -49,32 +48,32 @@ public class GreenTeamPost extends BaseTimeEntity {
   private String content;
 
   @Enumerated(EnumType.STRING)
-  @Column(name = "location_type", nullable = false, length = 10)
+  @Column(nullable = false, length = 10)
   private LocationType locationType;
 
   @Lob
-  @Column(name = "location_geojson", nullable = false)
+  @Column(nullable = false)
   private String locationGeojson;
 
-  @Column(name = "max_participants", nullable = false)
+  @Column(nullable = false)
   private Integer maxParticipants;
 
   @Builder.Default
-  @Column(name = "participant_count", nullable = false)
+  @Column(nullable = false)
   private Integer participantCount = 0;
 
   @Builder.Default
-  @Column(name = "like_count", nullable = false)
+  @Column(nullable = false)
   private Integer likeCount = 0;
 
   @Builder.Default
-  @Column(name = "comment_count", nullable = false)
+  @Column(nullable = false)
   private Integer commentCount = 0;
 
-  @Column(name = "event_date", nullable = false)
+  @Column(nullable = false)
   private LocalDateTime eventDate;
 
-  @Column(name = "deadline_at", nullable = false)
+  @Column(nullable = false)
   private LocalDateTime deadlineAt;
 
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
