@@ -28,7 +28,6 @@ import kr.bi.greenmate.common.domain.BaseTimeEntity;
 import kr.bi.greenmate.user.domain.User;
 
 @Entity
-@Table(name = "green_team_post")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -43,10 +42,10 @@ public class GreenTeamPost extends BaseTimeEntity {
   @JoinColumn(name = "user_id", nullable = false)
   private User user;
 
-  @Column(name = "title", nullable = false, length = 50)
+  @Column(nullable = false, length = 50)
   private String title;
 
-  @Column(name = "content", nullable = false, length = 4000)
+  @Column(nullable = false, length = 4000)
   private String content;
 
   @Enumerated(EnumType.STRING)

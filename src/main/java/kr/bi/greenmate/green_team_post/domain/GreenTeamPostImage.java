@@ -18,7 +18,6 @@ import lombok.NoArgsConstructor;
 import kr.bi.greenmate.common.domain.CreatedOnlyEntity;
 
 @Entity
-@Table(name = "green_team_post_image")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,7 +28,7 @@ public class GreenTeamPostImage extends CreatedOnlyEntity {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "post_id", nullable = false)
   private GreenTeamPost post;
 
