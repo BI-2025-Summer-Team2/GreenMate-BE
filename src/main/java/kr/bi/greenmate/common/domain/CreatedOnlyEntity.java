@@ -2,15 +2,15 @@ package kr.bi.greenmate.common.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import lombok.Getter;
 
 @Getter
 @MappedSuperclass
-public abstract class BaseTimeEntity extends CreatedOnlyEntity {
+public abstract class CreatedOnlyEntity {
 
-  @UpdateTimestamp
-  @Column(nullable = false)
-  protected LocalDateTime updatedAt;
+  @CreationTimestamp
+  @Column(nullable = false, updatable = false)
+  protected LocalDateTime createdAt;
 }
