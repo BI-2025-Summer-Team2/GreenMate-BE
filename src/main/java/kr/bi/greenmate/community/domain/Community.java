@@ -19,7 +19,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import kr.bi.greenmate.common.domain.BaseTimeEntity;
-import kr.bi.greenmate.community.CommunityImage;
 import kr.bi.greenmate.user.domain.User;
 
 @Entity
