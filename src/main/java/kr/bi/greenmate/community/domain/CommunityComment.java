@@ -47,10 +47,9 @@ public class CommunityComment extends BaseTimeEntity{
     @Column(nullable = false, length = 100)
     private String content;
 
-    @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "communityComment", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityImage> images = new ArrayList<>();
 
-    @UpdateTimestamp
     @Column(nullable = true)
     private LocalDateTime deletedAt;
 }
