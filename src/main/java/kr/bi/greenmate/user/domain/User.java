@@ -6,11 +6,17 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.CacheConcurrencyStrategy;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.NaturalIdCache;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name="users")
+@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
+@NaturalIdCache
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,19 +27,20 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NaturalId
     @Column(nullable = false, length = 100, unique = true)
     private String email;
 
     @Column(nullable = false, length = 100)
     private String password;
 
-    @Column(nullable = false, columnDefinition = "VARCHAR2(10 CHAR)", unique = true)
+    @Column(nullable = false, length = 10, unique = true)
     private String nickname;
 
     @Column(length = 63)
     private String profileImageUrl;
 
-    @Column(columnDefinition = "VARCHAR2(300 CHAR)")
+    @Column(length = 300)
     private String selfIntroduction;
 
     private LocalDateTime deletedAt;
