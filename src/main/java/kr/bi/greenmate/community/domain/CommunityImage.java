@@ -9,12 +9,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import kr.bi.greenmate.common.domain.CreatedOnlyEntity;
+import kr.bi.greenmate.community.domain.Community;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import kr.bi.greenmate.common.domain.CreatedOnlyEntity;
 
 @Entity
 @Getter
