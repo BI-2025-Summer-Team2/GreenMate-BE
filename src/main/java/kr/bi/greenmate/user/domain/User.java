@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @Table(name="users")
 @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @NaturalIdCache
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @Getter
