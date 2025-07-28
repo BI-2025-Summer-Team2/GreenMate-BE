@@ -30,7 +30,7 @@ import kr.bi.greenmate.community.domain.Community;
 @Builder
 @Table(
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"community_id", "user_id"})
+        @UniqueConstraint(name = "uq_community_like_community_user", columnNames = {"community_id", "user_id"})
     }
 )
 public class CommunityLike extends CreatedOnlyEntity {
