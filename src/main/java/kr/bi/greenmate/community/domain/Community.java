@@ -40,7 +40,7 @@ public class Community extends BaseTimeEntity{
     @Column(nullable = false, length = 20)
     private String title;
 
-    @Column(nullable = false, length = 5000)
+    @Column(nullable = false, length = 500)
     private String content;
 
     @Builder.Default
