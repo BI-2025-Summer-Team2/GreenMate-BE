@@ -19,7 +19,7 @@ import kr.bi.greenmate.user.domain.User;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @org.hibernate.annotations.SQLDelete(sql = "UPDATE green_team_post_comment SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
