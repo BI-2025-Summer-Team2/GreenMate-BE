@@ -20,7 +20,7 @@ import kr.bi.greenmate.user.domain.User;
 
 @Entity
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 @Table(
