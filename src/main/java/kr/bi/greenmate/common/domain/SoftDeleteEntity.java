@@ -12,4 +12,8 @@ public class SoftDeleteEntity extends BaseTimeEntity{
 
     @Column
     private LocalDateTime deletedAt;
+
+    public boolean isDeleted() {
+        return deletedAt != null;
+    }
 }
