@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.NaturalId;
 import org.hibernate.annotations.NaturalIdCache;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "users")
@@ -24,7 +24,7 @@ import org.hibernate.annotations.Where;
 @Builder
 @Getter
 @SQLDelete(sql = "UPDATE users SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
-@Where(clause = "deleted_at IS NULL")
+@SQLRestriction("deleted_at IS NULL")
 public class User extends SoftDeleteEntity {
 
     @Id
