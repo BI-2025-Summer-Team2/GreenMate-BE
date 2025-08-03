@@ -35,6 +35,6 @@ public class UserAgreement extends BaseTimeEntity {
     @JoinColumn(name = "term_id")
     private Term term;
 
-    @Column(nullable = false)
-    private boolean isAgreed;
+    @Column(name = "is_agreed", nullable = false)
+    private boolean agreed;
 }
