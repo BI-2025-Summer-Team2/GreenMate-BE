@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import kr.bi.greenmate.common.domain.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 @Getter
-public class TermEntity {
+public class Term extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,10 +27,11 @@ public class TermEntity {
     @Column(length = 30, nullable = false)
     private String title;
 
-    @Column(columnDefinition = "CLOB", nullable = false)
+    @Lob
+    @Column(nullable = false)
     private String content;
 
     @Column(nullable = false)
-    private Integer mandatory;
+    private boolean mandatory;
 
 }
