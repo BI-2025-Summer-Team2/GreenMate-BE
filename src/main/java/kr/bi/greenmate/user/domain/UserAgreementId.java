@@ -6,12 +6,14 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Embeddable
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
 @Getter
-public class UserAgreementId {
+public class UserAgreementId implements Serializable {
     private Long userId;
     private Long termId;
 }
