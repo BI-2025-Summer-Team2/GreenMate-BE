@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 
+import org.hibernate.annotations.SQLDelete;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +24,7 @@ import kr.bi.greenmate.user.domain.User;
 @NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@org.hibernate.annotations.SQLDelete(sql = "UPDATE green_team_post_comment SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
+@SQLDelete(sql = "UPDATE green_team_post_comment SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?")
 public class GreenTeamPostComment extends SoftDeletableEntity {
 
   @Id
