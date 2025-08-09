@@ -6,7 +6,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
-import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.recycling_edu_post.domain.RecyclingEduPost;
 
 @Getter
@@ -29,13 +28,12 @@ public class RecyclingEduPostResponse {
   @Schema(description = "게시글 생성일시", example = "2025-08-07T10:00:00")
   private final LocalDateTime createdAt;
 
-  public static RecyclingEduPostResponse from(RecyclingEduPost post,
-      ObjectStorageRepository objectStorageRepository) {
+  public static RecyclingEduPostResponse from(RecyclingEduPost post, String imageUrl) {
     return RecyclingEduPostResponse.builder()
         .id(post.getId())
         .title(post.getTitle())
         .content(post.getContent())
-        .imageUrl(objectStorageRepository.getDownloadUrl(post.getImageUrl()))
+        .imageUrl(imageUrl)
         .createdAt(post.getCreatedAt())
         .build();
   }

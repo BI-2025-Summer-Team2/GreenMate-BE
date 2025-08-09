@@ -12,7 +12,6 @@ import kr.bi.greenmate.recycling_edu_post.repository.RecyclingEduPostRepository;
 
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -26,9 +25,11 @@ public class RecyclingEduPostService {
    */
   public List<RecyclingEduPostResponse> getAllPosts() {
     List<RecyclingEduPost> posts = repository.findAll();
-
     return posts.stream()
-        .map(post -> RecyclingEduPostResponse.from(post, objectStorageRepository))
+        .map(post -> RecyclingEduPostResponse.from(
+            post,
+            objectStorageRepository.getDownloadUrl(post.getImageUrl())
+        ))
         .toList();
   }
 
@@ -39,10 +40,9 @@ public class RecyclingEduPostService {
     if (id == null) {
       throw new IllegalArgumentException("ID는 null일 수 없습니다.");
     }
-
     RecyclingEduPost post = repository.findById(id)
         .orElseThrow(() -> new IllegalArgumentException("해당 분리수거 학습글이 존재하지 않습니다."));
-
-    return RecyclingEduPostResponse.from(post, objectStorageRepository);
+    String imageUrl = objectStorageRepository.getDownloadUrl(post.getImageUrl());
+    return RecyclingEduPostResponse.from(post, imageUrl);
   }
 }
