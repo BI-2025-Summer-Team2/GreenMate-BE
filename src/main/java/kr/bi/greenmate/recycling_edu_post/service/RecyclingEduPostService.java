@@ -2,8 +2,10 @@ package kr.bi.greenmate.recycling_edu_post.service;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.recycling_edu_post.domain.RecyclingEduPost;
@@ -24,12 +26,10 @@ public class RecyclingEduPostService {
    * 전체 목록 조회
    */
   public List<RecyclingEduPostResponse> getAllPosts() {
-    List<RecyclingEduPost> posts = repository.findAll();
-    return posts.stream()
+    return repository.findAll().stream()
         .map(post -> RecyclingEduPostResponse.from(
             post,
-            objectStorageRepository.getDownloadUrl(post.getImageUrl())
-        ))
+            objectStorageRepository.getDownloadUrl(post.getImageUrl())))
         .toList();
   }
 
@@ -37,11 +37,10 @@ public class RecyclingEduPostService {
    * 단일 조회
    */
   public RecyclingEduPostResponse getPostById(Long id) {
-    if (id == null) {
-      throw new IllegalArgumentException("ID는 null일 수 없습니다.");
-    }
     RecyclingEduPost post = repository.findById(id)
-        .orElseThrow(() -> new IllegalArgumentException("해당 분리수거 학습글이 존재하지 않습니다."));
+        .orElseThrow(() -> new ResponseStatusException(
+            HttpStatus.NOT_FOUND, "해당 분리수거 학습글이 존재하지 않습니다."));
+
     String imageUrl = objectStorageRepository.getDownloadUrl(post.getImageUrl());
     return RecyclingEduPostResponse.from(post, imageUrl);
   }
