@@ -2,11 +2,10 @@ package kr.bi.greenmate.recycling_edu_post.service;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
+import kr.bi.greenmate.common.exception.ResourceNotFoundException;
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.recycling_edu_post.domain.RecyclingEduPost;
 import kr.bi.greenmate.recycling_edu_post.dto.RecyclingEduPostResponse;
@@ -38,8 +37,8 @@ public class RecyclingEduPostService {
    */
   public RecyclingEduPostResponse getPostById(Long id) {
     RecyclingEduPost post = repository.findById(id)
-        .orElseThrow(() -> new ResponseStatusException(
-            HttpStatus.NOT_FOUND, "해당 분리수거 학습글이 존재하지 않습니다."));
+        .orElseThrow(() ->
+            new ResourceNotFoundException("해당 분리수거 학습글이 존재하지 않습니다."));
 
     String imageUrl = objectStorageRepository.getDownloadUrl(post.getImageUrl());
     return RecyclingEduPostResponse.from(post, imageUrl);
