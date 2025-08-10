@@ -90,10 +90,10 @@ public class UserService {
 
     private void validateAllRequiredTermsAgreed(List<Agreement> agreements, List<Term> terms) {
 
-        List<Long> agreedRequiredTermIds = agreements.stream()
+        Set<Long> agreedRequiredTermIds = agreements.stream()
                 .filter(Agreement::getAgreed)
                 .map(Agreement::getTermId)
-                .toList();
+                .collect(Collectors.toSet());
 
         if (!terms.stream()
                 .filter(Term::isMandatory)
