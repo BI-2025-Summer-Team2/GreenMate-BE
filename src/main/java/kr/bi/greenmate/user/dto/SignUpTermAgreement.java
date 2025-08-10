@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Agreement {
+public class SignUpTermAgreement {
 
     @NotNull(message = "termId 필수")
     @Positive(message = "termId 양수")

@@ -5,7 +5,7 @@ import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.repository.TermRepository;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.domain.UserAgreement;
-import kr.bi.greenmate.user.dto.Agreement;
+import kr.bi.greenmate.user.dto.SignUpTermAgreement;
 import kr.bi.greenmate.user.dto.SignUpRequest;
 import kr.bi.greenmate.user.exception.DuplicateEmailException;
 import kr.bi.greenmate.user.exception.RequiredTermNotAgreedException;
@@ -42,15 +42,15 @@ public class UserService {
                 .collect(Collectors.toMap(Term::getId, term -> term));
 
         // 요청된 약관 유효성 검증
-        List<Agreement> reqAgreements = request.getAgreements();
-        validateRequestedAgreements(reqAgreements, termMap);
+        List<SignUpTermAgreement> reqSignUpTermAgreements = request.getSignUpTermAgreements();
+        validateRequestedAgreements(reqSignUpTermAgreements, termMap);
 
         // 필수 약관 동의 검증
-        validateAllRequiredTermsAgreed(reqAgreements, terms);
+        validateAllRequiredTermsAgreed(reqSignUpTermAgreements, terms);
 
         User user = createUser(request);
         saveUser(user, email);
-        saveUserAgreements(user, reqAgreements, termMap);
+        saveUserAgreements(user, reqSignUpTermAgreements, termMap);
     }
 
     private void validateEmailIsUnique(String email) {
@@ -60,23 +60,23 @@ public class UserService {
         }
     }
 
-    private void validateRequestedAgreements(List<Agreement> reqAgreements, Map<Long, Term> termMap) {
+    private void validateRequestedAgreements(List<SignUpTermAgreement> reqSignUpTermAgreements, Map<Long, Term> termMap) {
 
-        Set<Long> reqTermIds = getReqTermIds(reqAgreements);
-        validateNoDuplicateRequestTerms(reqTermIds, reqAgreements);
+        Set<Long> reqTermIds = getReqTermIds(reqSignUpTermAgreements);
+        validateNoDuplicateRequestTerms(reqTermIds, reqSignUpTermAgreements);
         validateRequestedTermsMatchRegistered(reqTermIds, termMap);
     }
 
-    private Set<Long> getReqTermIds(List<Agreement> reqAgreements) {
+    private Set<Long> getReqTermIds(List<SignUpTermAgreement> reqSignUpTermAgreements) {
 
-        return reqAgreements.stream()
-                .map(Agreement::getTermId)
+        return reqSignUpTermAgreements.stream()
+                .map(SignUpTermAgreement::getTermId)
                 .collect(Collectors.toSet());
     }
 
-    private void validateNoDuplicateRequestTerms(Set<Long> reqTermIds, List<Agreement> reqAgreements) {
+    private void validateNoDuplicateRequestTerms(Set<Long> reqTermIds, List<SignUpTermAgreement> reqSignUpTermAgreements) {
 
-        if (reqTermIds.size() != reqAgreements.size()) {
+        if (reqTermIds.size() != reqSignUpTermAgreements.size()) {
             throw new TermAgreementValidationException();
         }
     }
@@ -88,11 +88,11 @@ public class UserService {
         }
     }
 
-    private void validateAllRequiredTermsAgreed(List<Agreement> agreements, List<Term> terms) {
+    private void validateAllRequiredTermsAgreed(List<SignUpTermAgreement> signUpTermAgreements, List<Term> terms) {
 
-        Set<Long> agreedRequiredTermIds = agreements.stream()
-                .filter(Agreement::getAgreed)
-                .map(Agreement::getTermId)
+        Set<Long> agreedRequiredTermIds = signUpTermAgreements.stream()
+                .filter(SignUpTermAgreement::getAgreed)
+                .map(SignUpTermAgreement::getTermId)
                 .collect(Collectors.toSet());
 
         if (!terms.stream()
@@ -114,14 +114,14 @@ public class UserService {
                 .build();
     }
 
-    private void saveUserAgreements(User user, List<Agreement> agreements, Map<Long, Term> termMap) {
+    private void saveUserAgreements(User user, List<SignUpTermAgreement> signUpTermAgreements, Map<Long, Term> termMap) {
 
-        List<UserAgreement> entities = agreements.stream()
-                .map(agreement ->
+        List<UserAgreement> entities = signUpTermAgreements.stream()
+                .map(signUpTermAgreement ->
                         UserAgreement.builder()
                                 .user(user)
-                                .term(termMap.get(agreement.getTermId()))
-                                .agreed(agreement.getAgreed())
+                                .term(termMap.get(signUpTermAgreement.getTermId()))
+                                .agreed(signUpTermAgreement.getAgreed())
                                 .build())
                 .collect(Collectors.toList());
         userAgreementRepository.saveAll(entities);

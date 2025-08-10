@@ -49,7 +49,7 @@ public class SignUpRequest {
 
     @NotEmpty(message = "약관 확인")
     @Valid
-    private List<Agreement> agreements;
+    private List<SignUpTermAgreement> signUpTermAgreements;
 
     @AssertTrue(message = "비밀번호가 일치하지 않음")
     public boolean isPasswordMatching() {
