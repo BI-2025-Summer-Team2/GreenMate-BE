@@ -53,9 +53,7 @@ public class SignUpRequest {
 
     @AssertTrue(message = "비밀번호가 일치하지 않음")
     public boolean isPasswordMatching() {
-        if(password == null || passwordConfirm == null){
-            return false;
-        }
+
         return password.equals(passwordConfirm);
     }
 }
