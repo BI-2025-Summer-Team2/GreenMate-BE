@@ -1,5 +1,6 @@
 package kr.bi.greenmate.user.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
@@ -11,20 +12,24 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Schema(description = "회원가입 요청 DTO")
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SignUpRequest {
 
+    @Schema(description = "email", example = "user@example.com")
     @NotBlank(message = "이메일 필수")
     @Email(message = "올바르지 않은 이메일 형식")
     @Size(max = 100, message = "이메일은 100자 이하")
     private String email;
 
+    @Schema(description = "비밀번호", example = "password!@123")
     // 특수문자 "^"는 예기치 않은 오류 및 보안 취약점이 될 수 있어서 제외
     @NotBlank(message = "비밀번호 필수")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9!@#$%&*]+$",
@@ -33,20 +38,35 @@ public class SignUpRequest {
     @Size(min = 8, max = 100, message = "비밀번호 8자 이상, 100자 이하")
     private String password;
 
+    @Schema(description = "비밀번호 확인", example = "password!@123")
     @NotBlank(message = "비밀번호 확인 필수")
     private String passwordConfirm;
 
+    @Schema(description = "닉네임", example = "그린Mate")
     @NotBlank(message = "닉네임 필수")
     @Size(min = 2, max = 10, message = "닉네임 2자 이상, 10자 이하")
     @Pattern(regexp = "^[ㄱ-ㅎ가-힣A-Za-z0-9]+$", message = "닉네임에 한글, 영문, 숫자만 가능")
     private String nickname;
 
-    @Size(max = 63, message = "프로필 이미지 URL 63자 이하")
-    private String profileImageUrl;
+    @Schema(description = "프로필 이미지 파일", format = "binary")
+    private MultipartFile profileImage;
 
+    @Schema(description = "자기소개", example = "안녕하세요! 제가 바로 길거리 청소왕입니다.")
     @Size(max = 300, message = "자기소개 300자 이하")
     private String selfIntroduction;
 
+    @Schema(description = "가입 약관 동의 내역", example = """
+            [
+                {
+                    "termId": 1,
+                    "agreed": true
+                },
+                {
+                    "termId": 2,
+                    "agreed": false
+                }
+            ]
+            """)
     @NotEmpty(message = "약관 확인")
     @Valid
     private List<SignUpTermAgreement> signUpTermAgreements;
