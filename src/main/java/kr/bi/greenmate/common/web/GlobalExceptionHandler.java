@@ -2,6 +2,7 @@ package kr.bi.greenmate.common.web;
 
 import jakarta.validation.ConstraintViolationException;
 import kr.bi.greenmate.user.exception.DuplicateEmailException;
+import kr.bi.greenmate.user.exception.DuplicateNicknameException;
 import kr.bi.greenmate.user.exception.RequiredTermNotAgreedException;
 import kr.bi.greenmate.user.exception.TermAgreementValidationException;
 import lombok.extern.slf4j.Slf4j;
@@ -56,8 +57,14 @@ public class GlobalExceptionHandler {
     // 409: 이메일 중복
     @ExceptionHandler(DuplicateEmailException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateEmail(DuplicateEmailException ex) {
-        log.warn("Duplicate email");
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse("Duplicate email"));
+        log.warn(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateNicknameException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateNickname(DuplicateNicknameException ex) {
+        log.warn(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(new ErrorResponse(ex.getMessage()));
     }
 
     // 400: 약관 요청 형식/일치 검증 실패

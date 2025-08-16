@@ -5,9 +5,10 @@ import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.repository.TermRepository;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.domain.UserAgreement;
-import kr.bi.greenmate.user.dto.SignUpTermAgreement;
 import kr.bi.greenmate.user.dto.SignUpRequest;
+import kr.bi.greenmate.user.dto.SignUpTermAgreement;
 import kr.bi.greenmate.user.exception.DuplicateEmailException;
+import kr.bi.greenmate.user.exception.DuplicateNicknameException;
 import kr.bi.greenmate.user.exception.RequiredTermNotAgreedException;
 import kr.bi.greenmate.user.exception.TermAgreementValidationException;
 import kr.bi.greenmate.user.repository.UserAgreementRepository;
@@ -34,8 +35,12 @@ public class UserService {
     @Transactional
     public void signUp(SignUpRequest request) {
 
+        // unique 필드 1차 검증
         String email = request.getEmail();
+        String nickname = request.getNickname();
+
         validateEmailIsUnique(email);
+        validateNicknameIsUnique(nickname);
 
         List<Term> terms = termRepository.findAll();
         Map<Long, Term> termMap = terms.stream()
@@ -49,7 +54,7 @@ public class UserService {
         validateAllRequiredTermsAgreed(reqSignUpTermAgreements, terms);
 
         User user = createUser(request);
-        saveUser(user, email);
+        saveUser(user, email, nickname);
         saveUserAgreements(user, reqSignUpTermAgreements, termMap);
     }
 
@@ -57,6 +62,13 @@ public class UserService {
 
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateEmailException(email);
+        }
+    }
+
+    private void validateNicknameIsUnique(String nickname) {
+
+        if (userRepository.existsByNickname(nickname)) {
+            throw new DuplicateNicknameException(nickname);
         }
     }
 
@@ -127,13 +139,17 @@ public class UserService {
         userAgreementRepository.saveAll(entities);
     }
 
-    private void saveUser(User user, String email){
+    private void saveUser(User user, String email, String nickname) {
         try {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
-            // 이메일 중복이 원인인지 확인
+
             if (userRepository.existsByEmail(email)) {
                 throw new DuplicateEmailException(email);
+            }
+
+            if (userRepository.existsByNickname(nickname)) {
+                throw new DuplicateNicknameException(nickname);
             }
 
             throw e;
