@@ -1,6 +1,7 @@
 package kr.bi.greenmate.user.service;
 
 import jakarta.transaction.Transactional;
+import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.repository.TermRepository;
 import kr.bi.greenmate.user.domain.User;
@@ -17,7 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +34,7 @@ public class UserService {
     private final TermRepository termRepository;
     private final UserAgreementRepository userAgreementRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FileStorageService fileStorageRepository;
 
     @Transactional
     public void signUp(SignUpRequest request) {
@@ -53,7 +57,9 @@ public class UserService {
         // 필수 약관 동의 검증
         validateAllRequiredTermsAgreed(reqSignUpTermAgreements, terms);
 
-        User user = createUser(request);
+        String profileImageUrl = saveProfileImage(request.getProfileImage());
+
+        User user = createUser(request, profileImageUrl);
         saveUser(user, email, nickname);
         saveUserAgreements(user, reqSignUpTermAgreements, termMap);
     }
@@ -116,12 +122,25 @@ public class UserService {
         }
     }
 
-    private User createUser(SignUpRequest request) {
+    private String saveProfileImage(MultipartFile profileImageFile) {
+        if (profileImageFile == null || !profileImageFile.isEmpty()) {
+            return null;
+        }
+        try {
+            return fileStorageRepository.uploadFile(profileImageFile, "user/profile");
+        } catch (IOException e) {
+            throw new RuntimeException("프로필 이미지 파일 업로드 중 오류가 발생했습니다.", e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("프로필 이미지 파일이 유효하지 않습니다.", e);
+        }
+    }
+
+    private User createUser(SignUpRequest request, String profileImageUrl) {
         return User.builder()
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .nickname(request.getNickname())
-                .profileImageUrl(request.getProfileImageUrl())
+                .profileImageUrl(profileImageUrl)
                 .selfIntroduction(request.getSelfIntroduction())
                 .build();
     }

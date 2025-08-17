@@ -8,9 +8,10 @@ import kr.bi.greenmate.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,8 +24,8 @@ public class UserController {
     private final UserService userService;
 
     @Operation(summary = "회원가입", description = "사용자를 GreenMate 회원으로 등록합니다.")
-    @PostMapping("/signup")
-    public ResponseEntity<Void> signUp(@RequestBody @Valid SignUpRequest request) {
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> signUp(@ModelAttribute @Valid SignUpRequest request) {
 
         userService.signUp(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
