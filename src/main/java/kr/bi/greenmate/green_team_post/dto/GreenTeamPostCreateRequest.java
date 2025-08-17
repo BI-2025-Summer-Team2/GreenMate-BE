@@ -10,6 +10,9 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import kr.bi.greenmate.green_team_post.domain.LocationType;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,7 +35,7 @@ public class GreenTeamPostCreateRequest {
   private String content;
 
   @NotNull
-  private kr.bi.greenmate.green_team_post.domain.LocationType locationType;
+  private LocationType locationType;
 
   @NotBlank
   private String locationGeojson; // 프론트에서 전달받은 GeoJSON 그대로 저장
