@@ -1,4 +1,4 @@
-package kr.bi.greenmate.repository;
+package kr.bi.greenmate.common.repository;
 
 import io.awspring.cloud.s3.S3Resource;
 import io.awspring.cloud.s3.S3Template;
