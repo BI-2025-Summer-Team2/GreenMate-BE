@@ -1,5 +1,6 @@
 package kr.bi.greenmate.green_team_post.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import java.net.URI;
 
 import jakarta.validation.Valid;
@@ -32,7 +33,10 @@ public class GreenTeamPostController {
   @Operation(summary = "모집글 생성", description = "환경 활동 모집글을 생성합니다.")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<IdResponse> create(
+      @Parameter(description = "환경 활동 모집글 생성 요청 DTO")
       @ModelAttribute @Valid GreenTeamPostCreateRequest request,
+
+      @Parameter(hidden = true, description = "인증된 사용자 ID (자동 주입)")
       @AuthenticationPrincipal(expression = "id") Long userId
   ) {
     Long id = service.create(userId, request);
