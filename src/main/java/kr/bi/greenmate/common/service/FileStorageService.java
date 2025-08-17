@@ -1,7 +1,7 @@
 package kr.bi.greenmate.common.service;
 
 import kr.bi.greenmate.common.domain.ImageFileExtension;
-import kr.bi.greenmate.repository.ObjectStorageRepository;
+import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
