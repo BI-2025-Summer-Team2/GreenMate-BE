@@ -70,12 +70,6 @@ public class GreenTeamPostCommandService {
     if (req.getMaxParticipants() == null || req.getMaxParticipants() < 1) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "최대 참가 인원은 1명 이상이어야 합니다.");
     }
-
-    if (req.getImages().size() > MAX_IMAGE_COUNT) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "이미지는 최대 " + MAX_IMAGE_COUNT + "장까지 업로드 가능합니다."
-      );
-    }
   }
 
   private User findWriter(Long userId) {
