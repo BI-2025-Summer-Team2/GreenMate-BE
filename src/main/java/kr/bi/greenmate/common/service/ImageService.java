@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 
@@ -23,7 +23,17 @@ import java.util.UUID;
 public class ImageService {
 
   private static final long MAX_IMAGE_BYTES = 1_000_000L; // 1MB (정책대로 10진수 1MB)
-  private static final Set<String> ALLOWED = Set.of("image/jpeg", "image/jpg", "image/png");
+
+  /**
+   * 허용 MIME 타입과 확장자 매핑
+   */
+  private static final Map<String, String> EXTENSIONS = Map.of(
+      "image/jpeg", ".jpg",
+      "image/jpg", ".jpg",
+      "image/png", ".png",
+      "image/webp", ".webp",
+      "image/avif", ".avif"
+  );
 
   private final ObjectStorageRepository storage;
 
@@ -34,7 +44,7 @@ public class ImageService {
     String dir = normalize(directory);
     validate(dir, file);
 
-    String ext = pickExt(file.getContentType()); // ".jpg" or ".png"
+    String ext = EXTENSIONS.get(file.getContentType().toLowerCase(Locale.ROOT));
     String uuid32 = UUID.randomUUID().toString().replace("-", "");
     String key = uuid32 + ext;
 
@@ -83,31 +93,22 @@ public class ImageService {
       throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "이미지는 최대 1MB까지 업로드 가능합니다.");
     }
     String ct = Optional.ofNullable(file.getContentType()).orElse("").toLowerCase(Locale.ROOT);
-    if (!ALLOWED.contains(ct)) {
+    if (!EXTENSIONS.containsKey(ct)) {
       throw new ResponseStatusException(
-          HttpStatus.UNSUPPORTED_MEDIA_TYPE, "지원하지 않는 이미지 형식입니다. jpeg, jpg, png만 지원합니다.");
+          HttpStatus.UNSUPPORTED_MEDIA_TYPE,
+          "지원하지 않는 이미지 형식입니다. 지원 가능: " + String.join(", ", EXTENSIONS.keySet())
+      );
     }
   }
 
   /**
-   * Content-Type 값을 기반으로 저장할 이미지 파일의 확장자를 결정
-   */
-  private String pickExt(String contentType) {
-    String ct = Optional.ofNullable(contentType).orElse("").toLowerCase(Locale.ROOT);
-    if (ct.contains("png")) {
-      return ".png";
-    }
-    return ".jpg"; // jpeg/jpg 기본
-  }
-
-  /**
-   * 디렉토리 경로의 앞뒤 공백과 마지막 슬래시를 제거하여 일관된 형식으로 반환
+   * 디렉토리 경로의 앞뒤 공백과 마지막 슬래시를 제거
    */
   private String normalize(String dir) {
-    String d = dir == null ? "" : dir.trim();
-    if (d.isEmpty()) {
-      return d;
+    if (dir == null || dir.isBlank()) {
+      return "";
     }
-    return d.endsWith("/") ? d.substring(0, d.length() - 1) : d;
+    String trimmed = dir.trim();
+    return trimmed.endsWith("/") ? trimmed.substring(0, trimmed.length() - 1) : trimmed;
   }
 }
