@@ -1,6 +1,7 @@
 package kr.bi.greenmate.user.service;
 
 import jakarta.transaction.Transactional;
+import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.repository.TermRepository;
@@ -15,6 +16,7 @@ import kr.bi.greenmate.user.exception.TermAgreementValidationException;
 import kr.bi.greenmate.user.repository.UserAgreementRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ public class UserService {
     private final UserAgreementRepository userAgreementRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public void signUp(SignUpRequest request) {
@@ -127,7 +130,12 @@ public class UserService {
             return null;
         }
         try {
-            return fileStorageRepository.uploadFile(profileImageFile, "user/profile");
+            String profileImageUrl = fileStorageRepository.uploadFile(profileImageFile, "user/profile");
+            // 롤백될 경우 대비 이벤트 발행
+            eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
+
+            return profileImageUrl;
+
         } catch (IOException e) {
             throw new RuntimeException("프로필 이미지 파일 업로드 중 오류가 발생했습니다.", e);
         } catch (IllegalArgumentException e) {

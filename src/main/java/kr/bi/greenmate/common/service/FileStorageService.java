@@ -36,6 +36,10 @@ public class FileStorageService {
         return objectStorageRepository.getDownloadUrl(uploadedFileKey);
     }
 
+    public void deleteFile(String fileUrl) {
+        objectStorageRepository.delete(fileUrl);
+    }
+
     private ImageFileExtension getFileExtension(MultipartFile file) throws IOException {
         String originalFileName = file.getOriginalFilename();
         validateOriginalFileName(originalFileName);
