@@ -3,13 +3,15 @@ package kr.bi.greenmate.green_team_post.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.multipart.MultipartFile;
-
+import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.multipart.MultipartFile;
 
 import kr.bi.greenmate.green_team_post.domain.LocationType;
 
@@ -45,13 +47,23 @@ public class GreenTeamPostCreateRequest {
   private Integer maxParticipants;
 
   @NotNull
+  @Future(message = "활동일은 현재 시점 이후로 설정해주세요")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private LocalDateTime eventDate;
 
   @NotNull
+  @Future(message = "신청 마감일은 현재 시점 이후로 설정해주세요")
   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
   private LocalDateTime deadlineAt;
 
   @Size(max = 3)
   private List<MultipartFile> images;
+
+  @AssertTrue(message = "신청 마감일은 활동일과 같거나 그 이전이어야 합니다")
+  private boolean isDeadlineBeforeEvent() {
+    if (deadlineAt == null || eventDate == null) {
+      return true;
+    }
+    return deadlineAt.isBefore(eventDate) || deadlineAt.isEqual(eventDate);
+  }
 }
