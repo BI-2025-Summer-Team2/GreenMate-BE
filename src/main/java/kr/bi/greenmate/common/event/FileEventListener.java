@@ -15,7 +15,6 @@ public class FileEventListener {
 
     private final FileStorageService fileStorageService;
 
-    @Async
     @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
     public void handleFileRollback(FileRollbackEvent event){
         String fileUrl = event.getFileUrl();

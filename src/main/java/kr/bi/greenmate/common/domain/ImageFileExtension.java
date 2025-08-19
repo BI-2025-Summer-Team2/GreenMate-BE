@@ -1,8 +1,11 @@
 package kr.bi.greenmate.common.domain;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 import java.util.Optional;
 
+@Getter
 public enum ImageFileExtension {
     JPG("image/jpeg"), JPEG("image/jpeg"), PNG("image/png"), GIF("image/gif");
 
@@ -10,10 +13,6 @@ public enum ImageFileExtension {
 
     ImageFileExtension(String mimeType){
         this.mimeType = mimeType;
-    }
-
-    String getMimeType(){
-        return mimeType;
     }
 
     public static Optional<ImageFileExtension> fromExtension(String extension){

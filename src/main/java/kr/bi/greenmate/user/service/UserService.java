@@ -36,7 +36,7 @@ public class UserService {
     private final TermRepository termRepository;
     private final UserAgreementRepository userAgreementRepository;
     private final PasswordEncoder passwordEncoder;
-    private final FileStorageService fileStorageRepository;
+    private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
@@ -126,11 +126,11 @@ public class UserService {
     }
 
     private String saveProfileImage(MultipartFile profileImageFile) {
-        if (profileImageFile == null || !profileImageFile.isEmpty()) {
+        if (profileImageFile == null || profileImageFile.isEmpty()) {
             return null;
         }
         try {
-            String profileImageUrl = fileStorageRepository.uploadFile(profileImageFile, "user/profile");
+            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, "user/profile");
             // 롤백될 경우 대비 이벤트 발행
             eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
 
