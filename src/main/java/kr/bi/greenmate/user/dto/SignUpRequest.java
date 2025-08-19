@@ -38,10 +38,6 @@ public class SignUpRequest {
     @Size(min = 8, max = 100, message = "비밀번호 8자 이상, 100자 이하")
     private String password;
 
-    @Schema(description = "비밀번호 확인", example = "password!@123")
-    @NotBlank(message = "비밀번호 확인 필수")
-    private String passwordConfirm;
-
     @Schema(description = "닉네임", example = "그린Mate")
     @NotBlank(message = "닉네임 필수")
     @Size(min = 2, max = 10, message = "닉네임 2자 이상, 10자 이하")
@@ -70,10 +66,4 @@ public class SignUpRequest {
     @NotEmpty(message = "약관 확인")
     @Valid
     private List<SignUpTermAgreement> signUpTermAgreements;
-
-    @AssertTrue(message = "비밀번호가 일치하지 않음")
-    public boolean isPasswordMatching() {
-
-        return password.equals(passwordConfirm);
-    }
 }
