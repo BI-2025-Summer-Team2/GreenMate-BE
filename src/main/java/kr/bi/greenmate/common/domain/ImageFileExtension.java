@@ -24,17 +24,7 @@ public enum ImageFileExtension {
         }
 
         return Arrays.stream(values())
-                .filter(e -> e.name().equalsIgnoreCase(extension))
+                .filter(e -> e.name().equals(extension))
                 .findFirst();
-    }
-
-    public static boolean isAllowedMimeType(String mimeType) {
-        if (mimeType == null || mimeType.isBlank()) {
-            return false;
-        }
-
-        return Arrays.stream(ImageFileExtension.values())
-                .anyMatch(e ->
-                        e.getMimeType().equalsIgnoreCase(mimeType));
     }
 }

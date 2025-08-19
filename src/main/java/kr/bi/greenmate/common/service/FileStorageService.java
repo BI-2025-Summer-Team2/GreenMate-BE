@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -42,28 +43,29 @@ public class FileStorageService {
 
     private ImageFileExtension getFileExtension(MultipartFile file) throws IOException {
         String originalFileName = file.getOriginalFilename();
-        validateOriginalFileName(originalFileName);
+        if (originalFileName == null || originalFileName.isBlank()) {
+            throw new IllegalArgumentException("원본 파일명이 유효하지 않습니다.");
+        }
 
         String fileExtensionStr = StringUtils.getFilenameExtension(originalFileName);
-        ImageFileExtension fileExtension = getImageFileExtension(fileExtensionStr);
+        if (fileExtensionStr == null) {
+            throw new IllegalArgumentException("파일 확장자가 존재하지 않습니다.");
+        }
 
-        validateMimeType(file);
+        ImageFileExtension fileExtension = getImageFileExtension(fileExtensionStr.toUpperCase());
+        validateMimeType(file, fileExtension);
 
         return fileExtension;
     }
 
-    private void validateOriginalFileName(String originalFileName) {
-        if (originalFileName == null || originalFileName.isBlank()) {
-            throw new IllegalArgumentException("원본 파일명이 유효하지 않습니다.");
-        }
-    }
-
-    private void validateMimeType(MultipartFile file) throws IOException {
+    private void validateMimeType(MultipartFile file, ImageFileExtension extension) throws IOException {
         try (InputStream inputStream = file.getInputStream()) {
             String detectedMimeType = URLConnection.guessContentTypeFromStream(inputStream);
-
-            if (!ImageFileExtension.isAllowedMimeType(detectedMimeType)) {
-                throw new IllegalArgumentException("허용되지 않는 MimeType입니다: " + detectedMimeType);
+            if (detectedMimeType == null) {
+                throw new IllegalArgumentException("파일의 MimeType을 확인할 수 없습니다.");
+            }
+            if (!extension.getMimeType().equals(detectedMimeType.toLowerCase())) {
+                throw new IllegalArgumentException("파일의 MimeType이 확장자와 일치하지 않습니다. " + extension.getMimeType() + "이어야 합니다. : " + detectedMimeType);
             }
         } catch (IOException e) {
             throw new IOException("파일 읽기 실패", e);
