@@ -27,7 +27,7 @@ public class SignUpRequest {
     @Size(max = 100, message = "이메일은 100자 이하")
     private String email;
 
-    @Schema(description = "비밀번호", example = "password!@123")
+    @Schema(description = "비밀번호: 영문과 숫자 필수 포함, 특수문자는 !@#$%&*만 사용 가능", example = "password!@123")
     // 특수문자 "^"는 예기치 않은 오류 및 보안 취약점이 될 수 있어서 제외
     @NotBlank(message = "비밀번호 필수")
     @Pattern(regexp = "^(?=.*[A-Za-z])(?=.*[0-9])[A-Za-z0-9!@#$%&*]+$",
