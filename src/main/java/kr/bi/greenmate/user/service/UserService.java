@@ -40,7 +40,7 @@ public class UserService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void signUp(SignUpRequest request) {
+    public void signUp(SignUpRequest request, MultipartFile profileImage) {
 
         // unique 필드 1차 검증
         String email = request.getEmail();
@@ -60,7 +60,7 @@ public class UserService {
         // 필수 약관 동의 검증
         validateAllRequiredTermsAgreed(reqSignUpTermAgreements, terms);
 
-        String profileImageUrl = saveProfileImage(request.getProfileImage());
+        String profileImageUrl = saveProfileImage(profileImage);
 
         User user = createUser(request, profileImageUrl);
         saveUser(user, email, nickname);

@@ -2,7 +2,6 @@ package kr.bi.greenmate.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -12,7 +11,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -43,9 +41,6 @@ public class SignUpRequest {
     @Size(min = 2, max = 10, message = "닉네임 2자 이상, 10자 이하")
     @Pattern(regexp = "^[ㄱ-ㅎ가-힣A-Za-z0-9]+$", message = "닉네임에 한글, 영문, 숫자만 가능")
     private String nickname;
-
-    @Schema(description = "프로필 이미지 파일", format = "binary")
-    private MultipartFile profileImage;
 
     @Schema(description = "자기소개", example = "안녕하세요! 제가 바로 길거리 청소왕입니다.")
     @Size(max = 300, message = "자기소개 300자 이하")
