@@ -9,7 +9,12 @@ import java.util.Optional;
 @Getter
 @RequiredArgsConstructor
 public enum ImageFileExtension {
-    JPG("image/jpeg"), JPEG("image/jpeg"), PNG("image/png"), GIF("image/gif");
+    JPG("image/jpeg"),
+    JPEG("image/jpeg"),
+    PNG("image/png"),
+    GIF("image/gif"),
+    WEBP("image/webp"),
+    AVIF("image/avif");
 
     private final String mimeType;
 
