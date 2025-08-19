@@ -1,6 +1,7 @@
 package kr.bi.greenmate.user.service;
 
 import jakarta.transaction.Transactional;
+import kr.bi.greenmate.common.domain.FilePath;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.term.domain.Term;
@@ -130,7 +131,7 @@ public class UserService {
             return null;
         }
         try {
-            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, "user/profile");
+            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
             // 롤백될 경우 대비 이벤트 발행
             eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
 

@@ -1,22 +1,20 @@
 package kr.bi.greenmate.common.domain;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.Optional;
 
 @Getter
+@RequiredArgsConstructor
 public enum ImageFileExtension {
     JPG("image/jpeg"), JPEG("image/jpeg"), PNG("image/png"), GIF("image/gif");
 
     private final String mimeType;
 
-    ImageFileExtension(String mimeType){
-        this.mimeType = mimeType;
-    }
-
-    public static Optional<ImageFileExtension> fromExtension(String extension){
-        if(extension == null || extension.isBlank()){
+    public static Optional<ImageFileExtension> fromExtension(String extension) {
+        if (extension == null || extension.isBlank()) {
             return Optional.empty();
         }
 
