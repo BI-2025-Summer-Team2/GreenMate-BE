@@ -1,6 +1,7 @@
 package kr.bi.greenmate.user.service;
 
 import jakarta.transaction.Transactional;
+import kr.bi.greenmate.common.annotation.DistributedLock;
 import kr.bi.greenmate.common.domain.FilePath;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
@@ -40,7 +41,7 @@ public class UserService {
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @Transactional
+    @DistributedLock(key="#request.getEmail().concat('-').concat(#request.getNickname())")
     public void signUp(SignUpRequest request, MultipartFile profileImage) {
 
         // unique 필드 1차 검증
@@ -172,13 +173,8 @@ public class UserService {
             userRepository.save(user);
         } catch (DataIntegrityViolationException e) {
 
-            if (userRepository.existsByEmail(email)) {
-                throw new DuplicateEmailException(email);
-            }
-
-            if (userRepository.existsByNickname(nickname)) {
-                throw new DuplicateNicknameException(nickname);
-            }
+            validateNicknameIsUnique(nickname);
+            validateEmailIsUnique(email);
 
             throw e;
         }
