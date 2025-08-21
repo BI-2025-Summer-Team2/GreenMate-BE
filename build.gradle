@@ -67,6 +67,9 @@ dependencies {
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // detect MIME Type(파서 없음)
+    implementation 'org.apache.tika:tika-core:3.2.2'
 }
 
 tasks.named('test') {

@@ -3,14 +3,13 @@ package kr.bi.greenmate.common.service;
 import kr.bi.greenmate.common.domain.ImageFileExtension;
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.tika.Tika;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLConnection;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -18,6 +17,7 @@ import java.util.UUID;
 public class FileStorageService {
 
     private final ObjectStorageRepository objectStorageRepository;
+    private final Tika tika;
 
     public String uploadFile(MultipartFile file, String subPath) throws IOException {
         if (file == null || file.isEmpty()) {
@@ -60,7 +60,7 @@ public class FileStorageService {
 
     private void validateMimeType(MultipartFile file, ImageFileExtension extension) throws IOException {
         try (InputStream inputStream = file.getInputStream()) {
-            String detectedMimeType = URLConnection.guessContentTypeFromStream(inputStream);
+            String detectedMimeType = tika.detect(inputStream);
             if (detectedMimeType == null) {
                 throw new IllegalArgumentException("파일의 MimeType을 확인할 수 없습니다.");
             }
