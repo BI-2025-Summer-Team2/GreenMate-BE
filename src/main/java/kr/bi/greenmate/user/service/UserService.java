@@ -18,6 +18,7 @@ import kr.bi.greenmate.user.exception.TermAgreementValidationException;
 import kr.bi.greenmate.user.repository.UserAgreementRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class UserService {
@@ -42,6 +44,7 @@ public class UserService {
     private final ApplicationEventPublisher eventPublisher;
 
     @DistributedLock(key="#request.getEmail().concat('-').concat(#request.getNickname())")
+    @Transactional
     public void signUp(SignUpRequest request, MultipartFile profileImage) {
 
         // unique 필드 1차 검증
@@ -133,8 +136,10 @@ public class UserService {
         }
         try {
             String profileImageUrl = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
+            log.info("imageURL: {}", profileImageUrl);
             // 롤백될 경우 대비 이벤트 발행
             eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
+
 
             return profileImageUrl;
 
