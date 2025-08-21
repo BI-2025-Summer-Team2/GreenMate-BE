@@ -8,7 +8,7 @@ public class CustomSpringELParser {
     private CustomSpringELParser() {
     }
 
-    public static Object getDynamicValue(String[] parameterNames, Object[] args, String key) {
+    public static String[] getDynamicValue(String[] parameterNames, Object[] args, String[] keys) {
         ExpressionParser parser = new SpelExpressionParser();
         StandardEvaluationContext context = new StandardEvaluationContext();
 
@@ -16,6 +16,11 @@ public class CustomSpringELParser {
             context.setVariable(parameterNames[i], args[i]);
         }
 
-        return parser.parseExpression(key).getValue(context, Object.class);
+        String[] dynamicKeys = new String[keys.length];
+        for(int i=0; i<keys.length; i++){
+            dynamicKeys[i] = parser.parseExpression(keys[i]).getValue(context, String.class);
+        }
+
+        return dynamicKeys;
     }
 }

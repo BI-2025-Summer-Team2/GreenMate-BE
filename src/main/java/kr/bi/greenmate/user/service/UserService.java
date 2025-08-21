@@ -43,7 +43,7 @@ public class UserService {
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @DistributedLock(key="#request.getEmail().concat('-').concat(#request.getNickname())")
+    @DistributedLock(keys={"#request.email","#request.nickname"})
     @Transactional
     public void signUp(SignUpRequest request, MultipartFile profileImage) {
 
