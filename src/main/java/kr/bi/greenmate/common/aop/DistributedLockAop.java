@@ -38,7 +38,7 @@ public class DistributedLockAop {
         String[] keys = getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.keys());
         RLock[] locks = new RLock[keys.length];
         for (int i = 0; i < locks.length; i++) {
-            locks[i] = redissonClient.getLock("Lock: " + keys[i]);
+            locks[i] = redissonClient.getLock(REDISSON_LOCK_PREFIX + keys[i]);
         }
 
         RedissonMultiLock multiLock = new RedissonMultiLock(locks);
