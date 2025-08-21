@@ -15,7 +15,7 @@ import kr.bi.greenmate.green_team_post.domain.GreenTeamPostImage;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
 import kr.bi.greenmate.green_team_post.repository.GreenTeamPostImageRepository;
 import kr.bi.greenmate.green_team_post.repository.GreenTeamPostRepository;
-import kr.bi.greenmate.green_team_post.error.GreenTeamPostErrorCode;
+import kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;

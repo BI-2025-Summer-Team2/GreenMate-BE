@@ -1,4 +1,4 @@
-package kr.bi.greenmate.green_team_post.error;
+package kr.bi.greenmate.green_team_post.exception;
 
 import java.util.EnumSet;
 import java.util.Map;
@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
-import static kr.bi.greenmate.green_team_post.error.GreenTeamPostErrorCode.GENERIC_40001;
-import static kr.bi.greenmate.green_team_post.error.GreenTeamPostErrorCode.GENERIC_50001;
+import static kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode.GENERIC_40001;
+import static kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode.GENERIC_50001;
 
 @RestControllerAdvice
 public class GreenTeamPostExceptionHandler {

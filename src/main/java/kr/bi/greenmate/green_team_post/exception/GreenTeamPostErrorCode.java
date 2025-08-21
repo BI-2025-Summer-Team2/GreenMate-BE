@@ -1,4 +1,4 @@
-package kr.bi.greenmate.green_team_post.error;
+package kr.bi.greenmate.green_team_post.exception;
 
 import org.springframework.http.HttpStatus;
 
