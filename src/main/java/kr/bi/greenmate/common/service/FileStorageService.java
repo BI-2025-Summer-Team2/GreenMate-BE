@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
 
+import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
+
 @Service
 @RequiredArgsConstructor
 public class FileStorageService {
@@ -34,7 +36,7 @@ public class FileStorageService {
                 file.getInputStream()
         );
 
-        return objectStorageRepository.getDownloadUrl(uploadedFileKey);
+        return getUriPath(objectStorageRepository.getDownloadUrl(uploadedFileKey));
     }
 
     public void deleteFile(String fileUrl) {

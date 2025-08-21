@@ -135,13 +135,13 @@ public class UserService {
             return null;
         }
         try {
-            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
-            log.info("imageURL: {}", profileImageUrl);
+            String profileImageUri = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
+            log.info("imageURI: {}", profileImageUri);
             // 롤백될 경우 대비 이벤트 발행
-            eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
+            eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUri));
 
 
-            return profileImageUrl;
+            return profileImageUri;
 
         } catch (IOException e) {
             throw new RuntimeException("프로필 이미지 파일 업로드 중 오류가 발생했습니다.", e);
