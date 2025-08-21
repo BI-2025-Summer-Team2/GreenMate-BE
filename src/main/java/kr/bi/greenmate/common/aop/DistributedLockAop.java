@@ -14,6 +14,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static kr.bi.greenmate.common.util.CustomSpringELParser.getDynamicValue;
 
@@ -31,6 +32,7 @@ public class DistributedLockAop {
 
     @Around("@annotation(kr.bi.greenmate.common.annotation.DistributedLock)")
     public Object lock(final ProceedingJoinPoint joinPoint) throws Throwable {
+        log.info("Start DistributedLock");
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         DistributedLock distributedLock = method.getAnnotation(DistributedLock.class);
@@ -49,6 +51,7 @@ public class DistributedLockAop {
             if (!available) {
                 return false;
             }
+            log.info("Success lock: {}", Arrays.toString(keys));
             return aopForTransaction.proceed(joinPoint);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -56,6 +59,7 @@ public class DistributedLockAop {
         } finally {
             try {
                 multiLock.unlock();
+                log.info("Unlock: {}", Arrays.toString(keys));
             } catch (IllegalMonitorStateException e) {
                 if (!available) {
                     log.info("Failed to get Lock: {} {}", method.getName(), keys);

@@ -1,6 +1,5 @@
 package kr.bi.greenmate.user.service;
 
-import jakarta.transaction.Transactional;
 import kr.bi.greenmate.common.annotation.DistributedLock;
 import kr.bi.greenmate.common.domain.FilePath;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
@@ -46,7 +45,6 @@ public class UserService {
     private final ApplicationEventPublisher eventPublisher;
 
     @DistributedLock(keys = {"#request.email", "#request.nickname"})
-    @Transactional
     public void signUp(SignUpRequest request, MultipartFile profileImage) {
 
         // unique 필드 1차 검증
@@ -141,7 +139,6 @@ public class UserService {
             log.info("imageURI: {}", profileImageUrl);
             // 롤백될 경우 대비 이벤트 발행
             eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
-
 
             return getUriPath(profileImageUrl);
 
