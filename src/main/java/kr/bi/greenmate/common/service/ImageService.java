@@ -58,16 +58,12 @@ public class ImageService {
 
   /**
    * 다중 이미지 업로드
-   * <p>
-   * - 파일 목록이 비어있으면 빈 리스트를 반환한다. - 파일 개수가 maxCount를 초과하면 예외를 발생시킨다. - 각 파일이 비어있으면 예외를 발생시킨다.
+   * - 파일 목록이 비어있으면 빈 리스트를 반환한다.
+   * - 각 파일이 비어있으면 예외를 발생시킨다.
    */
-  public List<String> uploadMany(String directory, List<MultipartFile> files, int maxCount) {
+  public List<String> uploadMany(String directory, List<MultipartFile> files) {
     if (files == null || files.isEmpty()) {
       return Collections.emptyList();
-    }
-    if (files.size() > maxCount) {
-      throw new ResponseStatusException(
-          HttpStatus.BAD_REQUEST, "이미지는 최대 " + maxCount + "장까지 업로드 가능합니다.");
     }
     List<String> results = new ArrayList<>(files.size());
     for (MultipartFile f : files) {

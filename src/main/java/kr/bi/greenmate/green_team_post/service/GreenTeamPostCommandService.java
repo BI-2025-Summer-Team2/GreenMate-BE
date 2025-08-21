@@ -42,6 +42,7 @@ public class GreenTeamPostCommandService {
   @Transactional
   public Long create(Long userId, GreenTeamPostCreateRequest req, List<MultipartFile> images) {
     validateRequest(userId, req);
+    validateImagesCount(images);
 
     User writer = findWriter(userId);
     GreenTeamPost post = createPost(writer, req);
@@ -89,6 +90,19 @@ public class GreenTeamPostCommandService {
     }
   }
 
+  private void validateImagesCount(List<MultipartFile> images) {
+    if (images == null || images.isEmpty()) {
+      return;
+    }
+
+    if (images.size() > MAX_IMAGE_COUNT) {
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_40005.status(),
+          GreenTeamPostErrorCode.GTP_40005.code()
+      );
+    }
+  }
+
   private User findWriter(Long userId) {
     return userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(
@@ -118,7 +132,7 @@ public class GreenTeamPostCommandService {
     }
 
     try {
-      List<String> keys = imageService.uploadMany(IMAGE_DIR, images, MAX_IMAGE_COUNT);
+      List<String> keys = imageService.uploadMany(IMAGE_DIR, images);
 
       List<GreenTeamPostImage> postImages = keys.stream()
           .map(key -> GreenTeamPostImage.builder()
