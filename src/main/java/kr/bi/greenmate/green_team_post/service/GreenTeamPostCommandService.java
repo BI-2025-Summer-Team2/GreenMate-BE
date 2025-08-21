@@ -1,6 +1,7 @@
 package kr.bi.greenmate.green_team_post.service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -46,8 +47,13 @@ public class GreenTeamPostCommandService {
 
     User writer = findWriter(userId);
     GreenTeamPost post = createPost(writer, req);
-    saveImages(post, images);
 
+    // 이미지가 없을 경우 조기종료
+    if (images == null || images.isEmpty()) {
+      return post.getId();
+    }
+    // 이미지 업로드 및 GreenTeamPostImage 저장
+    saveImages(post, images);
     return post.getId();
   }
 
@@ -131,9 +137,9 @@ public class GreenTeamPostCommandService {
       return;
     }
 
+    List<String> keys = Collections.emptyList();
     try {
-      List<String> keys = imageService.uploadMany(IMAGE_DIR, images);
-
+      keys = imageService.uploadMany(IMAGE_DIR, images);
       List<GreenTeamPostImage> postImages = keys.stream()
           .map(key -> GreenTeamPostImage.builder()
               .post(post)
@@ -144,8 +150,14 @@ public class GreenTeamPostCommandService {
       imageRepository.saveAll(postImages);
 
     } catch (ResponseStatusException e) {
+      if (keys != null && !keys.isEmpty()) {
+        imageService.deleteMany(keys);
+      }
       throw e; // ImageService에서 예외처리
     } catch (Exception e) {
+      if (keys != null && !keys.isEmpty()) {
+        imageService.deleteMany(keys);
+      }
       throw new ResponseStatusException(
           GreenTeamPostErrorCode.IMG_50001.status(),
           GreenTeamPostErrorCode.IMG_50001.code(),
