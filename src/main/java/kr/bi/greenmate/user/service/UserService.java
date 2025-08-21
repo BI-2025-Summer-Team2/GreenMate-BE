@@ -31,6 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
+
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -43,7 +45,7 @@ public class UserService {
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
 
-    @DistributedLock(keys={"#request.email","#request.nickname"})
+    @DistributedLock(keys = {"#request.email", "#request.nickname"})
     @Transactional
     public void signUp(SignUpRequest request, MultipartFile profileImage) {
 
@@ -135,13 +137,13 @@ public class UserService {
             return null;
         }
         try {
-            String profileImageUri = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
-            log.info("imageURI: {}", profileImageUri);
+            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
+            log.info("imageURI: {}", profileImageUrl);
             // 롤백될 경우 대비 이벤트 발행
-            eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUri));
+            eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
 
 
-            return profileImageUri;
+            return getUriPath(profileImageUrl);
 
         } catch (IOException e) {
             throw new RuntimeException("프로필 이미지 파일 업로드 중 오류가 발생했습니다.", e);
