@@ -19,7 +19,6 @@ import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 
-
 @Service
 @RequiredArgsConstructor
 public class GreenTeamPostCommandService {
@@ -36,16 +35,17 @@ public class GreenTeamPostCommandService {
    * 환경 활동 모집글 생성
    *
    * @param userId 작성자 ID
-   * @param req    게시글 생성 요청 DTO
+   * @param req    게시글 생성 요청 DTO(JSON)
+   * @param images 첨부 이미지 파일들(0~3장)
    * @return 생성된 게시글 ID
    */
   @Transactional
-  public Long create(Long userId, GreenTeamPostCreateRequest req) {
+  public Long create(Long userId, GreenTeamPostCreateRequest req, List<MultipartFile> images) {
     validateRequest(userId, req);
 
     User writer = findWriter(userId);
     GreenTeamPost post = createPost(writer, req);
-    saveImages(post, req.getImages());
+    saveImages(post, images);
 
     return post.getId();
   }

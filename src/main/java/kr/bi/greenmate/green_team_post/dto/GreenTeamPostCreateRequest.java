@@ -1,7 +1,8 @@
 package kr.bi.greenmate.green_team_post.dto;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Future;
@@ -10,15 +11,13 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.multipart.MultipartFile;
+import java.time.LocalDateTime;
 
 import kr.bi.greenmate.green_team_post.domain.LocationType;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import io.swagger.v3.oas.annotations.media.Schema;
 
 @Getter
 @Setter
@@ -52,25 +51,21 @@ public class GreenTeamPostCreateRequest {
 
   @NotNull
   @Future(message = "활동일은 현재 시점 이후로 설정해주세요")
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   @Schema(description = "활동일", example = "2025-09-01T10:00:00")
   private LocalDateTime eventDate;
 
   @NotNull
   @Future(message = "신청 마감일은 현재 시점 이후로 설정해주세요")
-  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   @Schema(description = "신청 마감일", example = "2025-08-30T23:59:59")
   private LocalDateTime deadlineAt;
-
-  @Size(max = 3)
-  @Schema(description = "첨부 이미지 (최대 3장)", type = "array", format = "binary")
-  private List<MultipartFile> images;
 
   @AssertTrue(message = "신청 마감일은 활동일과 같거나 그 이전이어야 합니다")
   private boolean isDeadlineBeforeEvent() {
     if (deadlineAt == null || eventDate == null) {
       return true;
     }
-    return deadlineAt.isBefore(eventDate) || deadlineAt.isEqual(eventDate);
+    return !deadlineAt.isAfter(eventDate);
   }
 }
