@@ -41,9 +41,9 @@ public class ImageService {
   /**
    * 단일 이미지 업로드: 도메인 제외 key 반환 (예: green-team-post/UUID32.jpg)
    */
-  public String uploadOne(String directory, MultipartFile file) {
-    String dir = normalize(directory);
-    validate(dir, file);
+  public String uploadOne(String path, MultipartFile file) {
+    String pathPrefix = normalize(path);
+    validate(file);
 
     String ext = EXTENSIONS.get(file.getContentType().toLowerCase(Locale.ROOT));
     String uuid32 = UUID.randomUUID().toString().replace("-", "");
@@ -51,18 +51,16 @@ public class ImageService {
 
     try (InputStream is = file.getInputStream()) {
       // 저장소가 반환하는 최종 key를 그대로 반환 (경로 조합 중복 제거)
-      return storage.upload(dir, key, is);
+      return storage.upload(pathPrefix, key, is);
     } catch (IOException e) {
       throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 업로드 실패", e);
     }
   }
 
   /**
-   * 다중 이미지 업로드
-   * - 파일 목록이 비어있으면 빈 리스트를 반환한다.
-   * - 각 파일이 비어있으면 예외를 발생시킨다.
+   * 다중 이미지 업로드 - 파일 목록이 비어있으면 빈 리스트를 반환한다. - 각 파일이 비어있으면 예외를 발생시킨다.
    */
-  public List<String> uploadMany(String directory, List<MultipartFile> files) {
+  public List<String> uploadMany(String pathPrefix, List<MultipartFile> files) {
     if (files == null || files.isEmpty()) {
       return Collections.emptyList();
     }
@@ -73,7 +71,7 @@ public class ImageService {
         if (f == null || f.isEmpty()) {
           throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "비어있는 파일이 포함되어 있습니다.");
         }
-        String key = uploadOne(directory, f); // 성공 시 full key 반환
+        String key = uploadOne(pathPrefix, f); // 성공 시 full key 반환
         uploaded.add(key);
       }
       return Collections.unmodifiableList(uploaded);
@@ -90,9 +88,7 @@ public class ImageService {
   }
 
   /**
-   * 단일 이미지 삭제
-   * - 키 삭제를 시도하고, 실패는 WARN 로그로만 남김
-   * - 예외는 전파하지 않음
+   * 단일 이미지 삭제 - 키 삭제를 시도하고, 실패는 WARN 로그로만 남김 - 예외는 전파하지 않음
    */
   public void deleteOne(String key) {
     if (key == null || key.isBlank()) {
@@ -106,9 +102,7 @@ public class ImageService {
   }
 
   /**
-   * 다중 이미지 삭제
-   * - 각 키별 삭제를 시도하고, 실패는 WARN 로그로만 남김
-   * - 예외는 전파하지 않음
+   * 다중 이미지 삭제 - 각 키별 삭제를 시도하고, 실패는 WARN 로그로만 남김 - 예외는 전파하지 않음
    */
   public void deleteMany(List<String> keys) {
     if (keys == null || keys.isEmpty()) {
@@ -148,12 +142,9 @@ public class ImageService {
   }
 
   /**
-   * 업로드할 이미지의 디렉토리, 파일 존재 여부, 크기, MIME 타입을 검증
+   * 업로드할 이미지 파일 존재 여부, 크기, MIME 타입을 검증
    */
-  private void validate(String directory, MultipartFile file) {
-    if (directory == null || directory.isBlank()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "저장 디렉토리가 비어있습니다.");
-    }
+  private void validate(MultipartFile file) {
     if (file == null || file.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "파일이 비어있습니다.");
     }
@@ -172,11 +163,11 @@ public class ImageService {
   /**
    * 디렉토리 경로의 앞뒤 공백과 마지막 슬래시를 제거
    */
-  private String normalize(String dir) {
-    if (dir == null || dir.isBlank()) {
+  private String normalize(String pathPrefix) {
+    if (pathPrefix == null || pathPrefix.isBlank()) {
       return "";
     }
-    String trimmed = dir.trim();
+    String trimmed = pathPrefix.trim();
     return trimmed.endsWith("/") ? trimmed.substring(0, trimmed.length() - 1) : trimmed;
   }
 }
