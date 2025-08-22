@@ -2,7 +2,6 @@ package kr.bi.greenmate.green_team_post.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -48,9 +47,6 @@ public class GreenTeamPostCommandService {
    */
   @Transactional
   public Long create(Long userId, GreenTeamPostCreateRequest req, List<MultipartFile> images) {
-    validateRequest(userId, req);
-    validateImagesCount(images);
-
     User writer = findWriter(userId);
     GreenTeamPost post = createPost(writer, req);
 
@@ -61,58 +57,6 @@ public class GreenTeamPostCommandService {
     // 이미지 업로드 및 GreenTeamPostImage 저장
     saveImages(post, images);
     return post.getId();
-  }
-
-  private void validateRequest(Long userId, GreenTeamPostCreateRequest req) {
-    if (userId == null) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.AUTH_40401.status(),
-          GreenTeamPostErrorCode.AUTH_40401.code()
-      );
-    }
-
-    LocalDateTime now = LocalDateTime.now();
-
-    if (req.getEventDate().isBefore(now)) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.GTP_40001.status(),
-          GreenTeamPostErrorCode.GTP_40001.code()
-      );
-    }
-
-    if (req.getDeadlineAt().isBefore(now)) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.GTP_40002.status(),
-          GreenTeamPostErrorCode.GTP_40002.code()
-      );
-    }
-
-    if (req.getDeadlineAt().isAfter(req.getEventDate())) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.GTP_40003.status(),
-          GreenTeamPostErrorCode.GTP_40003.code()
-      );
-    }
-
-    if (req.getMaxParticipants() == null || req.getMaxParticipants() < 1) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.GTP_40004.status(),
-          GreenTeamPostErrorCode.GTP_40004.code()
-      );
-    }
-  }
-
-  private void validateImagesCount(List<MultipartFile> images) {
-    if (images == null || images.isEmpty()) {
-      return;
-    }
-
-    if (images.size() > MAX_IMAGE_COUNT) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.GTP_40005.status(),
-          GreenTeamPostErrorCode.GTP_40005.code()
-      );
-    }
   }
 
   private User findWriter(Long userId) {
