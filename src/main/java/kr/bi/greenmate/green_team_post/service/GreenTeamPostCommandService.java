@@ -72,7 +72,11 @@ public class GreenTeamPostCommandService {
     try {
       geojsonStr = objectMapper.writeValueAsString(req.getLocationGeojson());
     } catch (JsonProcessingException e) {
-      throw new IllegalArgumentException("locationGeojson 직렬화 실패", e);
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_50001.status(),
+          GreenTeamPostErrorCode.GTP_50001.code(),
+          e
+      );
     }
 
     GreenTeamPost post = GreenTeamPost.builder()

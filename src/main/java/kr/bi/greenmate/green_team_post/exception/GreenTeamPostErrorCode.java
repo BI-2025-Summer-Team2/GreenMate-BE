@@ -13,6 +13,7 @@ public enum GreenTeamPostErrorCode {
   AUTH_40101("AUTH-40101", HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
   AUTH_40401("AUTH-40401", HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다."),
 
+  GTP_50001("GTP-50001", HttpStatus.INTERNAL_SERVER_ERROR, "위치 데이터 직렬화에 실패했습니다."),
   GENERIC_50001("GENERIC-50001", HttpStatus.INTERNAL_SERVER_ERROR, "서버 처리 중 오류가 발생했습니다."),
   IMG_50001("IMG-50001", HttpStatus.INTERNAL_SERVER_ERROR, "이미지 처리 중 오류가 발생했습니다.");
 
