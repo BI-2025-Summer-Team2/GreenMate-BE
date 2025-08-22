@@ -1,7 +1,7 @@
 package kr.bi.greenmate.green_team_post.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import jakarta.validation.constraints.AssertTrue;
@@ -39,10 +39,10 @@ public class GreenTeamPostCreateRequest {
   @Schema(description = "활동 위치 유형", example = "CIRCLE", allowableValues = {"CIRCLE", "POLYGON"})
   private LocationType locationType;
 
-  @NotBlank
+  @NotNull
   @Schema(description = "GeoJSON 문자열 (활동 위치 좌표)",
-  private String locationGeojson;
       example = "{\"center\":{\"lat\":36.61029738127031,\"lng\":127.28513401351398},\"radius\":392.24111263876654}")
+  private JsonNode locationGeojson;
 
   @NotNull
   @Min(1)

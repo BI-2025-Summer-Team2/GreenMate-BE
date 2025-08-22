@@ -1,9 +1,12 @@
 package kr.bi.greenmate.green_team_post.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +34,9 @@ public class GreenTeamPostCommandService {
   private final GreenTeamPostImageRepository imageRepository;
   private final UserRepository userRepository;
   private final ImageService imageService;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   /**
    * 환경 활동 모집글 생성
@@ -118,12 +124,19 @@ public class GreenTeamPostCommandService {
   }
 
   private GreenTeamPost createPost(User writer, GreenTeamPostCreateRequest req) {
+    String geojsonStr;
+    try {
+      geojsonStr = objectMapper.writeValueAsString(req.getLocationGeojson());
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException("locationGeojson 직렬화 실패", e);
+    }
+
     GreenTeamPost post = GreenTeamPost.builder()
         .user(writer)
         .title(req.getTitle())
         .content(req.getContent())
         .locationType(req.getLocationType())
-        .locationGeojson(req.getLocationGeojson())
+        .locationGeojson(geojsonStr) // 문자열로 저장
         .maxParticipants(req.getMaxParticipants())
         .eventDate(req.getEventDate())
         .deadlineAt(req.getDeadlineAt())
