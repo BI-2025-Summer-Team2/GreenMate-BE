@@ -41,8 +41,8 @@ public class GreenTeamPostCreateRequest {
 
   @NotBlank
   @Schema(description = "GeoJSON 문자열 (활동 위치 좌표)",
-      example = "{\"type\":\"Point\",\"coordinates\":[126.9784,37.5665]}")
   private String locationGeojson;
+      example = "{\"center\":{\"lat\":36.61029738127031,\"lng\":127.28513401351398},\"radius\":392.24111263876654}")
 
   @NotNull
   @Min(1)

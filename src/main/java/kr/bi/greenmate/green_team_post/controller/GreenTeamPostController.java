@@ -1,11 +1,13 @@
 package kr.bi.greenmate.green_team_post.controller;
 
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Encoding;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import lombok.RequiredArgsConstructor;
@@ -34,18 +36,22 @@ public class GreenTeamPostController {
 
   @Operation(
       summary = "환경 활동 모집글 생성",
-      description = "JSON 데이터는 `data` 필드(application/json)에, 이미지는 `images` 필드에 담아 전송합니다."
+      description = "멀티파트 요청: `data`(application/json) + `images`(파일 배열, 0~3장)",
+      requestBody = @RequestBody(
+          content = @Content(
+              mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
+              encoding = {
+                  @Encoding(name = "data", contentType = MediaType.APPLICATION_JSON_VALUE),
+                  @Encoding(name = "images", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+              }
+          )
+      )
   )
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<IdResponse> create(
-      @Parameter(description = "환경 활동 모집글 생성 생성 JSON(data)", required = true)
       @Valid
       @RequestPart("data") GreenTeamPostCreateRequest data,
-
-      @Parameter(description = "첨부 이미지(images, 0~3장)", required = false)
-      @RequestPart(value = "images", required = false) List<MultipartFile> images,
-
-      @Parameter(hidden = true, description = "인증된 사용자 ID (자동 주입)")
+      @RequestPart(value = "images", required = false) List<MultipartFile> images
       @AuthenticationPrincipal(expression = "id") Long userId
   ) {
     List<MultipartFile> safeImages = (images == null) ? List.of() : images;
