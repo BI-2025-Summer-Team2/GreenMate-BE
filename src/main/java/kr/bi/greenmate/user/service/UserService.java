@@ -68,7 +68,7 @@ public class UserService {
         String profileImageUrl = saveProfileImage(profileImage);
 
         User user = createUser(request, profileImageUrl);
-        saveUser(user, email, nickname);
+        userRepository.save(user);
         saveUserAgreements(user, reqSignUpTermAgreements, termMap);
     }
 
@@ -170,17 +170,5 @@ public class UserService {
                                 .build())
                 .collect(Collectors.toList());
         userAgreementRepository.saveAll(entities);
-    }
-
-    private void saveUser(User user, String email, String nickname) {
-        try {
-            userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-
-            validateNicknameIsUnique(nickname);
-            validateEmailIsUnique(email);
-
-            throw e;
-        }
     }
 }
