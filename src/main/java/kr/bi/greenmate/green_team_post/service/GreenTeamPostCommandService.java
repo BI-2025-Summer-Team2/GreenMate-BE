@@ -66,8 +66,8 @@ public class GreenTeamPostCommandService {
   private void validateRequest(Long userId, GreenTeamPostCreateRequest req) {
     if (userId == null) {
       throw new ResponseStatusException(
-          GreenTeamPostErrorCode.AUTH_40101.status(),
-          GreenTeamPostErrorCode.AUTH_40101.code()
+          GreenTeamPostErrorCode.AUTH_40401.status(),
+          GreenTeamPostErrorCode.AUTH_40401.code()
       );
     }
 
@@ -118,8 +118,8 @@ public class GreenTeamPostCommandService {
   private User findWriter(Long userId) {
     return userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(
-            GreenTeamPostErrorCode.AUTH_40101.status(),
-            GreenTeamPostErrorCode.AUTH_40101.code()
+            GreenTeamPostErrorCode.AUTH_40401.status(),
+            GreenTeamPostErrorCode.AUTH_40401.code()
         ));
   }
 
