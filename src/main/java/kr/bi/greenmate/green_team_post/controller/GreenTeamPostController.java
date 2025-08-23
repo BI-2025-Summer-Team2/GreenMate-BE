@@ -14,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -52,11 +51,10 @@ public class GreenTeamPostController {
       @Valid
       @RequestPart("data") GreenTeamPostCreateRequest data,
       @RequestPart(value = "images", required = false) List<MultipartFile> images
-//      @AuthenticationPrincipal(expression = "id") Long userId
   ) {
     List<MultipartFile> safeImages = (images == null) ? List.of() : images;
 
-    Long userId = 1L; // 개발용 임시값
+    Long userId = 1L; // 유저 인증 기능 구현 후 삭제
     Long id = service.create(userId, data, safeImages);
 
     URI location = ServletUriComponentsBuilder
