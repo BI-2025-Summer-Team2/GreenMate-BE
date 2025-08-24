@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
 import kr.bi.greenmate.green_team_post.domain.LocationType;
 
 @Getter
@@ -70,4 +71,25 @@ public class GreenTeamPostDetailResponse {
 
   @Schema(description = "첨부 이미지 URL 목록")
   private List<String> imageUrls;
+
+  public static GreenTeamPostDetailResponse from(GreenTeamPost post, List<String> imageUrls) {
+    return GreenTeamPostDetailResponse.builder()
+        .id(post.getId())
+        .userId(post.getUser().getId())
+        .nickname(post.getUser().getNickname())
+        .title(post.getTitle())
+        .content(post.getContent())
+        .locationType(post.getLocationType())
+        .locationGeojson(post.getLocationGeojson())
+        .maxParticipants(post.getMaxParticipants())
+        .participantCount(post.getParticipantCount())
+        .likeCount(post.getLikeCount())
+        .commentCount(post.getCommentCount())
+        .eventDate(post.getEventDate())
+        .deadlineAt(post.getDeadlineAt())
+        .createdAt(post.getCreatedAt())
+        .updatedAt(post.getUpdatedAt())
+        .imageUrls(imageUrls)
+        .build();
+  }
 }

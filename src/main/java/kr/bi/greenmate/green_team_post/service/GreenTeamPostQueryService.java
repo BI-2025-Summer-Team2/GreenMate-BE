@@ -36,24 +36,6 @@ public class GreenTeamPostQueryService {
         .map(GreenTeamPostImage::getImageUrl)
         .map(objectStorageRepository::getDownloadUrl)
         .toList();
-
-    return GreenTeamPostDetailResponse.builder()
-        .id(post.getId())
-        .userId(post.getUser().getId())
-        .nickname(post.getUser().getNickname())
-        .title(post.getTitle())
-        .content(post.getContent())
-        .locationType(post.getLocationType())
-        .locationGeojson(post.getLocationGeojson())
-        .maxParticipants(post.getMaxParticipants())
-        .participantCount(post.getParticipantCount())
-        .likeCount(post.getLikeCount())
-        .commentCount(post.getCommentCount())
-        .eventDate(post.getEventDate())
-        .deadlineAt(post.getDeadlineAt())
-        .createdAt(post.getCreatedAt())
-        .updatedAt(post.getUpdatedAt())
-        .imageUrls(imageUrls)
-        .build();
+    return GreenTeamPostDetailResponse.from(post, imageUrls);
   }
 }
