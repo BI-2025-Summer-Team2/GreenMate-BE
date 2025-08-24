@@ -54,7 +54,7 @@ public class GreenTeamPostController {
   ) {
     List<MultipartFile> safeImages = (images == null) ? List.of() : images;
 
-    Long userId = 1L; // 유저 인증 기능 구현 후 삭제
+    Long userId = 1L; // TODO: 유저 인증 기능 구현 후 삭제
     Long id = service.create(userId, data, safeImages);
 
     URI location = ServletUriComponentsBuilder
