@@ -1,36 +1,39 @@
 package kr.bi.greenmate.auth.jwt;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import kr.bi.greenmate.config.properties.JwtProperties;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+
+import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
 
 @Component
 public class JWTUtil {
     private final SecretKey secretKey;
 
     public JWTUtil(JwtProperties jwtProperties) {
-        this.secretKey = new SecretKeySpec(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+        this.secretKey = hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
     public String getEmail(String token) {
-        return Jwts.parser().verifyWith(secretKey).build()
-                .parseSignedClaims(token)
-                .getPayload()
+        return parseClaims(token)
                 .get("email", String.class);
     }
 
     public boolean isExpired(String token) {
-        return Jwts.parser().verifyWith(secretKey).build()
-                .parseSignedClaims(token)
-                .getPayload()
+        return parseClaims(token)
                 .getExpiration()
                 .before(new Date());
+    }
+
+    public Claims parseClaims(String token) {
+        return Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token)
+                .getPayload();
     }
 
     public String createJwt(String email, Long expiredMs) {

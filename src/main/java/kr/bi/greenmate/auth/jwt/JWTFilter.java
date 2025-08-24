@@ -27,7 +27,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authorization.split(" ")[1];
+        String token = authorization.substring(7);
 
         if (jwtUtil.isExpired(token)) {
             filterChain.doFilter(request, response);

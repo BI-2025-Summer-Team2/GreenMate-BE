@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Map;
+
 @Tag(name = "인증 인가", description = "로그인 API")
 @Slf4j
 @RequestMapping("/api/v1/auth")
@@ -23,8 +25,9 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "email과 password로 access 토큰을 발행합니다.")
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
         String token = loginService.login(request);
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + token).body("Success Login");
+        Map<String, String> response = Map.of("message", "로그인에 성공했습니다.");
+        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + token).body(response);
     }
 }

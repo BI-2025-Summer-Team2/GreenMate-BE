@@ -2,6 +2,7 @@ package kr.bi.greenmate.auth.service;
 
 import kr.bi.greenmate.auth.dto.LoginRequest;
 import kr.bi.greenmate.auth.jwt.JWTUtil;
+import kr.bi.greenmate.config.properties.JwtProperties;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ public class LoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtil jwtUtil;
+    private final JwtProperties jwtProperties;
 
     public String login(LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
@@ -25,7 +27,6 @@ public class LoginService {
         }
 
         // 토큰 유효 시간 1시간
-        long accessTokenValidity = 60 * 60 * 1000L;
-        return jwtUtil.createJwt(user.getEmail(), accessTokenValidity);
+        return jwtUtil.createJwt(user.getEmail(), jwtProperties.getAccessTokenValidityInMs());
     }
 }
