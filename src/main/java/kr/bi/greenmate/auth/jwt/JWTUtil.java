@@ -1,6 +1,7 @@
 package kr.bi.greenmate.auth.jwt;
 
 import io.jsonwebtoken.Jwts;
+import kr.bi.greenmate.config.properties.JwtProperties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +14,8 @@ import java.util.Date;
 public class JWTUtil {
     private final SecretKey secretKey;
 
-    public JWTUtil(@Value("${spring.jwt.secret}") String secret) {
-        this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
+    public JWTUtil(JwtProperties jwtProperties) {
+        this.secretKey = new SecretKeySpec(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
     public String getEmail(String token) {
