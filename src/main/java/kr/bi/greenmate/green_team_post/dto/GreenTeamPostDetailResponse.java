@@ -4,17 +4,13 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
 import java.util.List;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
 import kr.bi.greenmate.green_team_post.domain.LocationType;
 
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @Schema(description = "환경 활동 모집글 상세 응답 DTO")
 public class GreenTeamPostDetailResponse {
