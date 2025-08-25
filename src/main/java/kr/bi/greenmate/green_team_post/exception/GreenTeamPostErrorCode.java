@@ -12,7 +12,7 @@ public enum GreenTeamPostErrorCode {
   GENERIC_40001("GENERIC-40001", HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
   AUTH_40101("AUTH-40101", HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-  AUTH_40401("AUTH-40401", HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다."),
+  AUTH_40401("AUTH-40401", HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 
   GTP_40401("GTP-40401", HttpStatus.NOT_FOUND, "환경 활동 모집글을 찾을 수 없습니다."),
 
