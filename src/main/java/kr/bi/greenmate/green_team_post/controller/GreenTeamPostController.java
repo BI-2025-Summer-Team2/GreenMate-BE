@@ -1,5 +1,6 @@
 package kr.bi.greenmate.green_team_post.controller;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -75,6 +76,11 @@ public class GreenTeamPostController {
   @Operation(summary = "환경 활동 단일 모집글 조회", description = "특정 ID의 환경 활동 모집글을 조회합니다.")
   @GetMapping("/{id}")
   public ResponseEntity<GreenTeamPostDetailResponse> getGreenTeamPostById(
+      @Parameter(
+          description = "조회할 환경 활동 모집글 ID (1 이상의 정수)",
+          required = true,
+          example = "1"
+      )
       @PathVariable @NotNull @Min(1) Long id
   ) {
     return ResponseEntity.ok(queryService.getPostDetail(id));
