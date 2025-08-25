@@ -37,6 +37,8 @@ public class ApiDocsConfig {
                 .name(jwtSchemaName)
                 .type(SecurityScheme.Type.HTTP)
                 .scheme("bearer")
-                .bearerFormat("JWT"));
+                .bearerFormat("JWT")
+                .in(SecurityScheme.In.HEADER)
+                .name("Authorization"));
     }
 }
