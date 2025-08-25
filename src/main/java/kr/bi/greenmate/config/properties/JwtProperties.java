@@ -10,4 +10,5 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class JwtProperties {
     private String secret;
     private Long accessTokenValidityInMs;
+    private Long refreshTokenValidityInMs;
 }
