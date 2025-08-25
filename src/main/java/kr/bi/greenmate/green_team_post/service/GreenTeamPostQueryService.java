@@ -33,8 +33,7 @@ public class GreenTeamPostQueryService {
         ));
 
     List<String> imageUrls = imageRepository.findByPostId(id).stream()
-        .map(GreenTeamPostImage::getImageUrl)
-        .map(objectStorageRepository::getDownloadUrl)
+        .map(img -> objectStorageRepository.getDownloadUrl(img.getImageUrl()))
         .toList();
     return GreenTeamPostDetailResponse.from(post, imageUrls);
   }
