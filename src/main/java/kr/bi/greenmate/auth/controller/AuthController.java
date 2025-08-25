@@ -3,6 +3,7 @@ package kr.bi.greenmate.auth.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.bi.greenmate.auth.dto.LoginRequest;
+import kr.bi.greenmate.auth.dto.LoginResponse;
 import kr.bi.greenmate.auth.service.LoginService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,9 +26,9 @@ public class AuthController {
 
     @Operation(summary = "로그인", description = "email과 password로 access 토큰을 발행합니다.")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         String token = loginService.login(request);
-        Map<String, String> response = Map.of("message", "로그인에 성공했습니다.");
-        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + token).body(response);
+        LoginResponse responseBody = LoginResponse.builder().message("Success Login").build();
+        return ResponseEntity.ok().header(HttpHeaders.AUTHORIZATION, "Bearer " + token).body(responseBody);
     }
 }
