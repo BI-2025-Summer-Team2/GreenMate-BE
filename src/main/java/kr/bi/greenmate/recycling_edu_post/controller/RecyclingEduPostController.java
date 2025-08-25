@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -34,9 +35,14 @@ public class RecyclingEduPostController {
 
   @Operation(summary = "단일 게시글 조회", description = "특정 분리수거 학습 게시글을 조회합니다.")
   @GetMapping("/{id}")
-  public RecyclingEduPostResponse getPostById(
+  public RecyclingEduPostResponse getRecyclingEduPostById(
+      @Parameter(
+          description = "조회할 분리수가 학습 게시글 ID (1 이상의 정수)",
+          required = true,
+          example = "1"
+      )
       @PathVariable @NotNull @Min(1) Long id
   ) {
-    return service.getPostById(id);
+    return service.getPostDetail(id);
   }
 }
