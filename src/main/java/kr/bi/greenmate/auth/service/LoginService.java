@@ -27,6 +27,6 @@ public class LoginService {
         }
 
         // 토큰 유효 시간 1시간
-        return jwtUtil.createJwt(user.getEmail(), jwtProperties.getAccessTokenValidityInMs());
+        return jwtUtil.createJwt(String.valueOf(user.getId()), jwtProperties.getAccessTokenValidityInMs());
     }
 }

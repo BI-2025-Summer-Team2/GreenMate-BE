@@ -34,7 +34,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        CustomUserDetails userDetails = new CustomUserDetails(jwtUtil.getEmail(token));
+        CustomUserDetails userDetails = new CustomUserDetails(jwtUtil.getId(token));
 
         Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 

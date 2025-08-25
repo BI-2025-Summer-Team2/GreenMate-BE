@@ -19,9 +19,9 @@ public class JWTUtil {
         this.secretKey = hmacShaKeyFor(jwtProperties.getSecret().getBytes(StandardCharsets.UTF_8));
     }
 
-    public String getEmail(String token) {
+    public String getId(String token) {
         return parseClaims(token)
-                .get("email", String.class);
+                .get("id", String.class);
     }
 
     public boolean isExpired(String token) {
@@ -36,9 +36,9 @@ public class JWTUtil {
                 .getPayload();
     }
 
-    public String createJwt(String email, Long expiredMs) {
+    public String createJwt(String id, Long expiredMs) {
         return Jwts.builder()
-                .claim("email", email)
+                .claim("id", id)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
