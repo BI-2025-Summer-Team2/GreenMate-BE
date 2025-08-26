@@ -1,5 +1,6 @@
 package kr.bi.greenmate.green_team_post.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.EntityGraph;
@@ -14,4 +15,7 @@ public interface GreenTeamPostRepository extends JpaRepository<GreenTeamPost, Lo
   @EntityGraph(attributePaths = "user")
   @Query("select p from GreenTeamPost p where p.id = :id")
   Optional<GreenTeamPost> findByIdWithUser(@Param("id") Long id);
+
+  @EntityGraph(attributePaths = "user")
+  List<GreenTeamPost> findAllByOrderByCreatedAtDesc();
 }
