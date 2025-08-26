@@ -9,7 +9,6 @@ import kr.bi.greenmate.auth.service.LoginService;
 import kr.bi.greenmate.auth.service.ReissueAccessTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,8 +32,8 @@ public class AuthController {
     }
 
     @Operation(summary = "access token 재발행", description = "refresh token으로 access token을 새롭게 발행합니다.")
-    @PostMapping("/reissueToken")
-    public ResponseEntity<TokenResponse> reissueToken(@RequestBody ReissueTokenRequest request){
+    @PostMapping("/reissue-token")
+    public ResponseEntity<TokenResponse> reissueToken(@RequestBody ReissueTokenRequest request) {
         TokenResponse tokenResponse = reissueAccessTokenService.reissueToken(request);
         return ResponseEntity.ok(tokenResponse);
     }
