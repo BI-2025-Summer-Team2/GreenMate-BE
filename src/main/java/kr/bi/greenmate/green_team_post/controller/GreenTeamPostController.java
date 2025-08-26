@@ -27,6 +27,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import kr.bi.greenmate.common.dto.IdResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostDetailResponse;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostCommandService;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostQueryService;
@@ -71,6 +72,12 @@ public class GreenTeamPostController {
         .toUri();
 
     return ResponseEntity.created(location).body(new IdResponse(id));
+  }
+
+  @Operation(summary = "환경 활동 모집글 목록 조회", description = "최신 등록순으로 환경 활동 모집글 전체 목록을 반환합니다.")
+  @GetMapping
+  public ResponseEntity<List<GreenTeamPostSummaryResponse>> getGreenTeamPostList() {
+    return ResponseEntity.ok(queryService.getPostList());
   }
 
   @Operation(summary = "환경 활동 단일 모집글 조회", description = "특정 ID의 환경 활동 모집글을 조회합니다.")
