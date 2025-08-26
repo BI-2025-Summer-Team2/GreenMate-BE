@@ -3,6 +3,7 @@ package kr.bi.greenmate.green_team_post.exception;
 import org.springframework.http.HttpStatus;
 
 public enum GreenTeamPostErrorCode {
+  // 400 ERROR
   GTP_40001("GTP-40001", HttpStatus.BAD_REQUEST, "활동일은 현재 시점 이후여야 합니다."),
   GTP_40002("GTP-40002", HttpStatus.BAD_REQUEST, "모집 종료일은 현재 시점 이후여야 합니다."),
   GTP_40003("GTP-40003", HttpStatus.BAD_REQUEST, "모집 종료일은 활동일 이전이어야 합니다."),
@@ -11,8 +12,11 @@ public enum GreenTeamPostErrorCode {
   GENERIC_40001("GENERIC-40001", HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
   AUTH_40101("AUTH-40101", HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),
-  AUTH_40401("AUTH-40401", HttpStatus.UNAUTHORIZED, "사용자를 찾을 수 없습니다."),
+  AUTH_40401("AUTH-40401", HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
 
+  GTP_40401("GTP-40401", HttpStatus.NOT_FOUND, "환경 활동 모집글을 찾을 수 없습니다."),
+
+  // 500 ERROR
   GTP_50001("GTP-50001", HttpStatus.INTERNAL_SERVER_ERROR, "위치 데이터 직렬화에 실패했습니다."),
   GENERIC_50001("GENERIC-50001", HttpStatus.INTERNAL_SERVER_ERROR, "서버 처리 중 오류가 발생했습니다."),
   IMG_50001("IMG-50001", HttpStatus.INTERNAL_SERVER_ERROR, "이미지 처리 중 오류가 발생했습니다.");
