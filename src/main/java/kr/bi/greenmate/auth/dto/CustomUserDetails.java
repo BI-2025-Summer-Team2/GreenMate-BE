@@ -9,7 +9,9 @@ import java.util.Collections;
 
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
-    private final String id;
+    private final String userId;
+    private final String userEmail;
+    private final String userNickname;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -23,7 +25,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.id;
+        return this.userId;
     }
 
 }

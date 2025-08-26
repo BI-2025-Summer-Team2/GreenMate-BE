@@ -33,7 +33,11 @@ public class LoginService {
         }
 
         // 유효 시간 1시간
-        String accessToken = jwtUtil.createJwt(String.valueOf(user.getId()), jwtProperties.getAccessTokenValidityInMs());
+        String accessToken = jwtUtil.createJwt(
+                String.valueOf(user.getId()),
+                user.getEmail(),
+                user.getNickname(),
+                jwtProperties.getAccessTokenValidityInMs());
 
         // 유효 시간 최대 7일
         String refreshToken = getRefreshToken(user);
@@ -61,9 +65,16 @@ public class LoginService {
             refreshTokenRepository.deleteByUserId(userId);
         }
 
-        String newRefreshToken = jwtUtil.createJwt(String.valueOf(userId), jwtProperties.getRefreshTokenValidityInMs());
+        String newRefreshToken = jwtUtil.createJwt(
+                String.valueOf(userId),
+                user.getEmail(),
+                user.getNickname(),
+                jwtProperties.getRefreshTokenValidityInMs());
 
-        refreshTokenRepository.save(RefreshToken.builder().token(newRefreshToken).user(user).build());
+        refreshTokenRepository.save(RefreshToken.builder()
+                .token(newRefreshToken)
+                .user(user)
+                .build());
 
         return newRefreshToken;
     }

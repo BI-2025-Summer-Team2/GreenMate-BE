@@ -16,18 +16,23 @@ public class ReissueAccessTokenService {
     private final JWTUtil jwtUtil;
     private final JwtProperties jwtProperties;
 
-    public TokenResponse reissueToken(ReissueTokenRequest request){
+    public TokenResponse reissueToken(ReissueTokenRequest request) {
 
         String refreshTokenValue = request.getRefreshToken();
 
-        if(jwtUtil.isExpired(refreshTokenValue)){
+        if (jwtUtil.isExpired(refreshTokenValue)) {
             throw new IllegalArgumentException("만료된 리프레시 토큰입니다.");
         }
 
-        refreshTokenRepository.findByToken(refreshTokenValue).orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
+        refreshTokenRepository.findByToken(refreshTokenValue)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
 
-        String userId = jwtUtil.getId(refreshTokenValue);
-        String newAccessToken = jwtUtil.createJwt(userId, jwtProperties.getAccessTokenValidityInMs());
+        String newAccessToken = jwtUtil.createJwt(
+                jwtUtil.getClaim(refreshTokenValue, "user_id"),
+                jwtUtil.getClaim(refreshTokenValue, "user_email"),
+                jwtUtil.getClaim(refreshTokenValue, "user_nickname"),
+                jwtProperties.getAccessTokenValidityInMs());
+
         return TokenResponse.builder()
                 .refreshToken(refreshTokenValue)
                 .accessToken(newAccessToken)
