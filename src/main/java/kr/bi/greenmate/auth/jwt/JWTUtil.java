@@ -36,11 +36,20 @@ public class JWTUtil {
                 .getPayload();
     }
 
-    public String createJwt(String userId, String userEmail, String userNickname, Long expiredMs) {
+    public String createAccessToken(String userId, String userEmail, String userNickname, Long expiredMs) {
         return Jwts.builder()
                 .claim("user_id", userId)
                 .claim("user_email", userEmail)
                 .claim("user_nickname", userNickname)
+                .issuedAt(new Date(System.currentTimeMillis()))
+                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .signWith(secretKey)
+                .compact();
+    }
+
+    public String createRefreshToken(String userId, Long expiredMs){
+        return Jwts.builder()
+                .claim("user_id", userId)
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)

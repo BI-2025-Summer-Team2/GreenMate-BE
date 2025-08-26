@@ -27,7 +27,7 @@ public class ReissueAccessTokenService {
         refreshTokenRepository.findByToken(refreshTokenValue)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
 
-        String newAccessToken = jwtUtil.createJwt(
+        String newAccessToken = jwtUtil.createAccessToken(
                 jwtUtil.getClaim(refreshTokenValue, "user_id"),
                 jwtUtil.getClaim(refreshTokenValue, "user_email"),
                 jwtUtil.getClaim(refreshTokenValue, "user_nickname"),
