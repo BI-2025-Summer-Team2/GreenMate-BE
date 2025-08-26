@@ -3,6 +3,8 @@ package kr.bi.greenmate.green_team_post.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.LocalDateTime;
+import java.util.List;
+import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -23,7 +25,7 @@ public class GreenTeamPostSummaryResponse {
   @Schema(description = "모집글 제목", example = "한강 플로깅 함께해요")
   private String title;
 
-  @Schema(description = "모집글 요약 내용 (본문 최대 20자 + ... 표시)", example = "함께 한강을 걸으며 쓰레기를 주워요!...")
+  @Schema(description = "모집글 본문 내용", example = "함께 한강을 걸으며 쓰레기를 주워요!")
   private String content;
 
   @Schema(description = "현재 참여자 수", example = "5")
@@ -39,4 +41,18 @@ public class GreenTeamPostSummaryResponse {
   @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
   @Schema(description = "신청 마감일", example = "2025-08-30T23:59:59")
   private LocalDateTime deadlineAt;
+
+  public static GreenTeamPostSummaryResponse from(GreenTeamPost post) {
+    return GreenTeamPostSummaryResponse.builder()
+        .id(post.getId())
+        .userId(post.getUser().getId())
+        .nickname(post.getUser().getNickname())
+        .title(post.getTitle())
+        .content(post.getContent())
+        .maxParticipants(post.getMaxParticipants())
+        .participantCount(post.getParticipantCount())
+        .eventDate(post.getEventDate())
+        .deadlineAt(post.getDeadlineAt())
+        .build();
+  }
 }
