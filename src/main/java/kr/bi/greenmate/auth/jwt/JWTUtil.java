@@ -7,6 +7,9 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 
 import static io.jsonwebtoken.security.Keys.hmacShaKeyFor;
@@ -41,8 +44,8 @@ public class JWTUtil {
                 .claim("user_id", userId)
                 .claim("user_email", userEmail)
                 .claim("user_nickname", userNickname)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expiredMs))
+                .issuedAt(convertLocalDateTimeToDate(LocalDateTime.now()))
+                .expiration(convertLocalDateTimeToDate(getExpiredAt(expiredMs)))
                 .signWith(secretKey)
                 .compact();
     }
@@ -54,5 +57,13 @@ public class JWTUtil {
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public LocalDateTime getExpiredAt(Long expiredMs){
+        return LocalDateTime.now().plus(Duration.ofMillis(expiredMs));
+    }
+
+    public Date convertLocalDateTimeToDate(LocalDateTime time){
+        return Date.from(time.atZone(ZoneId.systemDefault()).toInstant());
     }
 }
