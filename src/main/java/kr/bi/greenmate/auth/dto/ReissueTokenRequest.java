@@ -13,4 +13,8 @@ public class ReissueTokenRequest {
     @Schema(description = "refresh token", example = "....")
     @NotBlank(message = "refresh token 필수")
     private String refreshToken;
+
+    @Schema(description = "user id", example = "1")
+    @NotBlank(message = "user id 필수")
+    private Long userId;
 }

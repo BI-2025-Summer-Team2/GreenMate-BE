@@ -1,5 +1,6 @@
 package kr.bi.greenmate.auth.service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import kr.bi.greenmate.auth.domain.RefreshToken;
 import kr.bi.greenmate.auth.dto.LoginRequest;
 import kr.bi.greenmate.auth.dto.ReissueTokenRequest;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -25,7 +27,7 @@ public class AuthService {
     private final JwtProperties jwtProperties;
     private final RefreshTokenRepository refreshTokenRepository;
 
-    public TokenResponse login(LoginRequest request) {
+    public TokenResponse login(LoginRequest request, HttpServletRequest servletRequest) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("로그인 정보에 일치하는 회원이 없습니다."));
 
@@ -36,7 +38,8 @@ public class AuthService {
         // 유효 시간 1시간
         String accessToken = createAccessToken(user);
         // 유효 시간 최대 7일
-        String refreshToken = getRefreshToken(user);
+        String refreshToken = createRefreshToken(user);
+        saveRefreshToken(user, refreshToken, servletRequest);
 
         return createTokenResponse(accessToken, refreshToken);
     }
@@ -47,12 +50,18 @@ public class AuthService {
             throw new IllegalArgumentException("만료된 리프레시 토큰입니다.");
         }
 
-        User user = refreshTokenRepository.findByToken(refreshTokenValue)
-                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.")).getUser();
+        RefreshToken refreshToken = refreshTokenRepository.findByToken(refreshTokenValue)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다."));
+
+        User user = refreshToken.getUser();
+        validateRefreshToken(refreshToken, request.getUserId(), user.getId());
 
         String newAccessToken = createAccessToken(user);
+        String newRefreshToken = createRefreshToken(user);
 
-        return createTokenResponse(newAccessToken, refreshTokenValue);
+        refreshToken.rotate(newRefreshToken, jwtUtil.getExpiredAt(jwtProperties.getRefreshTokenValidityInMs()));
+
+        return createTokenResponse(newAccessToken, newRefreshToken);
     }
 
     private TokenResponse createTokenResponse(String accessToken, String refreshToken) {
@@ -70,31 +79,50 @@ public class AuthService {
                 jwtProperties.getAccessTokenValidityInMs());
     }
 
-    private String getRefreshToken(User user) {
-        Long userId = user.getId();
-        Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserId(userId);
-
-        if (existingRefreshToken.isPresent()) {
-            String refreshTokenValue = existingRefreshToken.get().getToken();
-
-            if (!jwtUtil.isExpired(refreshTokenValue)) {
-                return refreshTokenValue;
-            }
-            refreshTokenRepository.deleteByUserId(userId);
-        }
-        return createRefreshToken(user);
-    }
-
     private String createRefreshToken(User user) {
-        String newRefreshToken = jwtUtil.createRefreshToken(
+        return jwtUtil.createRefreshToken(
                 String.valueOf(user.getId()),
                 jwtProperties.getRefreshTokenValidityInMs());
+    }
 
+    private String getIp(HttpServletRequest servletRequest) {
+        String ip = servletRequest.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = servletRequest.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = servletRequest.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = servletRequest.getRemoteAddr();
+        }
+        return ip;
+    }
+
+    private void saveRefreshToken(User user, String tokenValue, HttpServletRequest servletRequest) {
+        Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserAndIssuedIpAndIssuedUserAgent(user, getIp(servletRequest), servletRequest.getHeader("User-Agent"));
+        LocalDateTime expiredAt = jwtUtil.getExpiredAt(jwtProperties.getRefreshTokenValidityInMs());
+
+        if (existingRefreshToken.isPresent()) {
+            RefreshToken refreshToken = existingRefreshToken.get();
+            refreshToken.rotate(tokenValue, expiredAt);
+            return;
+        }
         refreshTokenRepository.save(RefreshToken.builder()
-                .token(newRefreshToken)
+                .token(tokenValue)
                 .user(user)
+                .issuedUserAgent(servletRequest.getHeader("User-Agent"))
+                .issuedIp(getIp(servletRequest))
+                .expired_at(expiredAt)
                 .build());
+    }
 
-        return newRefreshToken;
+    private void validateRefreshToken(RefreshToken refreshToken, Long userId, Long userIdOfToken){
+        // 만료 시간 변조 가능성
+        // 요청 유저가 토큰 식별자와 일치하는지 확인
+        if (refreshToken.isExpired() || !userId.equals(userIdOfToken)) {
+            refreshTokenRepository.delete(refreshToken);
+            throw new IllegalArgumentException("유효하지 않은 리프레시 토큰입니다.");
+        }
     }
 }
