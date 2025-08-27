@@ -7,14 +7,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import kr.bi.greenmate.user.domain.User;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.NaturalId;
 
 import java.time.LocalDateTime;
 
@@ -29,18 +28,28 @@ public class RefreshToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, updatable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false, updatable = false)
     private User user;
 
-    @NaturalId
-    @Column(length = 255, nullable = false, updatable = false, unique = true)
+    @Column(length = 255, nullable = false)
     private String token;
 
-    @Column(nullable = false, updatable = false)
+    @Column(length = 50)
+    private String issuedIp;
+
+    @Column(length = 255)
+    private String issuedUserAgent;
+
+    @Column(nullable = false)
     private LocalDateTime expired_at;
 
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(this.expired_at);
+    }
+
+    public void rotate(String newToken, LocalDateTime newExpiredAt) {
+        this.token = newToken;
+        this.expired_at = newExpiredAt;
     }
 }
