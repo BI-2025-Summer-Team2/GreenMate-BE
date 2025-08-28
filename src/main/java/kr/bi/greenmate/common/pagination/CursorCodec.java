@@ -1,5 +1,7 @@
 package kr.bi.greenmate.common.pagination;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -34,7 +36,8 @@ public final class CursorCodec {
     try {
       Payload payload = new Payload(direction, createdAt, id);
       String json = MAPPER.writeValueAsString(payload);
-      return Base64.getUrlEncoder().withoutPadding()
+      return Base64.getUrlEncoder()
+          .withoutPadding()
           .encodeToString(json.getBytes(StandardCharsets.UTF_8));
     } catch (JsonProcessingException e) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "커서 인코딩에 실패했습니다.", e);
@@ -53,10 +56,10 @@ public final class CursorCodec {
       String json = new String(bytes, StandardCharsets.UTF_8);
       Payload payload = MAPPER.readValue(json, Payload.class);
 
-      if (payload.direction == null || payload.createdAt == null || payload.id == null) {
+      if (payload.getDirection() == null || payload.getCreatedAt() == null || payload.getId() == null) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "커서 정보가 올바르지 않습니다.");
       }
-      if (!"next".equals(payload.direction) && !"prev".equals(payload.direction)) {
+      if (!"next".equals(payload.getDirection()) && !"prev".equals(payload.getDirection())) {
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "커서 방향 값이 잘못되었습니다.");
       }
       return payload;
@@ -73,14 +76,16 @@ public final class CursorCodec {
    */
   public static final class Payload {
 
-    public String direction;
-    public LocalDateTime createdAt;
-    public Long id;
+    private final String direction;
+    private final LocalDateTime createdAt;
+    private final Long id;
 
-    public Payload() {
-    }
-
-    public Payload(String direction, LocalDateTime createdAt, Long id) {
+    @JsonCreator
+    public Payload(
+        @JsonProperty("direction") String direction,
+        @JsonProperty("createdAt") LocalDateTime createdAt,
+        @JsonProperty("id") Long id
+    ) {
       this.direction = direction;
       this.createdAt = createdAt;
       this.id = id;
