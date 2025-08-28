@@ -20,12 +20,14 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import kr.bi.greenmate.common.dto.IdResponse;
+import kr.bi.greenmate.common.pagination.dto.PageResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostDetailResponse;
@@ -76,8 +78,13 @@ public class GreenTeamPostController {
 
   @Operation(summary = "환경 활동 모집글 목록 조회", description = "최신 등록순으로 환경 활동 모집글 전체 목록을 반환합니다.")
   @GetMapping
-  public ResponseEntity<List<GreenTeamPostSummaryResponse>> getGreenTeamPostList() {
-    return ResponseEntity.ok(queryService.getPostList());
+  public ResponseEntity<PageResponse<GreenTeamPostSummaryResponse>> getGreenTeamPostList(
+      @Parameter(description = "페이지 탐색을 위한 커서 값(Base64 인코딩). 첫 페이지 요청 시 생략 가능", required = false)
+      @RequestParam(value = "cursor", required = false) String cursor,
+      @Parameter(description = "페이지 크기(기본 20, 최대 50)", required = false, example = "20")
+      @RequestParam(value = "size", required = false) Integer size
+  ) {
+    return ResponseEntity.ok(queryService.getPostList(size, cursor));
   }
 
   @Operation(summary = "환경 활동 단일 모집글 조회", description = "특정 ID의 환경 활동 모집글을 조회합니다.")
