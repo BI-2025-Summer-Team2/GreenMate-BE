@@ -1,19 +1,15 @@
 package kr.bi.greenmate.green_team_post.service;
 
 import java.util.List;
-import java.util.Collections;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
+import kr.bi.greenmate.common.pagination.CursorPaginator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import lombok.RequiredArgsConstructor;
 
-import kr.bi.greenmate.common.pagination.dto.PageInfo;
 import kr.bi.greenmate.common.pagination.dto.PageResponse;
-import kr.bi.greenmate.common.pagination.CursorCodec;
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
@@ -34,6 +30,8 @@ public class GreenTeamPostQueryService {
   private final GreenTeamPostImageRepository imageRepository;
   private final ObjectStorageRepository objectStorageRepository;
 
+  private final CursorPaginator paginator;
+
   public GreenTeamPostDetailResponse getPostDetail(Long id) {
     GreenTeamPost post = postRepository.findByIdWithUser(id)
         .orElseThrow(() -> new ResponseStatusException(
@@ -46,65 +44,22 @@ public class GreenTeamPostQueryService {
     return GreenTeamPostDetailResponse.from(post, imageUrls);
   }
 
-  public PageResponse<GreenTeamPostSummaryResponse> getPostList(Integer size,
-      String cursor) {
-    int limit = clamp(size);
-    boolean firstPage = (cursor == null || cursor.isBlank());
+  public PageResponse<GreenTeamPostSummaryResponse> getPostList(Integer size, String cursor) {
+    return paginator.paginate(
+        DEFAULT_SIZE, MAX_SIZE, size, cursor,
 
-    List<GreenTeamPost> rows = firstPage
-        ? postRepository.fetchFirst(Pageable.ofSize(limit + 1))
-        : fetchByCursor(cursor, limit + 1);
+        // 첫 페이지, 다음/이전 페이지 조회
+        take -> postRepository.fetchFirst(org.springframework.data.domain.Pageable.ofSize(take)),
+        (cAt, cId, take) -> postRepository.fetchNext(cAt, cId,
+            org.springframework.data.domain.Pageable.ofSize(take)),
+        (cAt, cId, take) -> postRepository.fetchPrevAsc(cAt, cId,
+            org.springframework.data.domain.Pageable.ofSize(take)),
 
-    boolean hasMore = rows.size() > limit;
-    List<GreenTeamPost> page = hasMore ? rows.subList(0, limit) : rows;
+        // 커서 기준값 (createdAt, id)
+        GreenTeamPost::getCreatedAt,
+        GreenTeamPost::getId,
 
-    PageInfo pageInfo = buildPageInfo(firstPage, hasMore, page);
-    List<GreenTeamPostSummaryResponse> items = toSummaries(page);
-    return PageResponse.of(items, pageInfo);
-  }
-
-  private List<GreenTeamPost> fetchByCursor(String cursor, int take) {
-    CursorCodec.Payload p = CursorCodec.decode(cursor);
-    List<GreenTeamPost> list;
-    if ("next".equals(p.getDirection())) {
-      list = postRepository.fetchNext(p.getCreatedAt(), p.getId(), Pageable.ofSize(take));
-    } else if ("prev".equals(p.getDirection())) {
-      list = postRepository.fetchPrevAsc(p.getCreatedAt(), p.getId(), Pageable.ofSize(take));
-      Collections.reverse(list);
-    } else {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid cursor direction");
-    }
-    return list;
-  }
-
-  private PageInfo buildPageInfo(boolean firstPage, boolean hasMore, List<GreenTeamPost> page) {
-    if (page.isEmpty()) {
-      return PageInfo.builder().nextCursor(null).prevCursor(null).build();
-    }
-    GreenTeamPost first = page.get(0);
-    GreenTeamPost last = page.get(page.size() - 1);
-
-    String prev = firstPage ? null
-        : CursorCodec.encode(first.getCreatedAt(), first.getId(), "prev");
-
-    String next = hasMore
-        ? CursorCodec.encode(last.getCreatedAt(), last.getId(), "next")
-        : null;
-
-    return PageInfo.builder().nextCursor(next).prevCursor(prev).build();
-  }
-
-  private List<GreenTeamPostSummaryResponse> toSummaries(List<GreenTeamPost> page) {
-    return page.stream().map(GreenTeamPostSummaryResponse::from).toList();
-  }
-
-  private int clamp(Integer size) {
-    if (size == null) {
-      return DEFAULT_SIZE;
-    }
-    if (size < 1) {
-      return 1;
-    }
-    return Math.min(size, MAX_SIZE);
+        GreenTeamPostSummaryResponse::from
+    );
   }
 }
