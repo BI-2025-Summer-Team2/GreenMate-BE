@@ -1,4 +1,4 @@
-package kr.bi.greenmate.common.dto;
+package kr.bi.greenmate.common.pagination.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
