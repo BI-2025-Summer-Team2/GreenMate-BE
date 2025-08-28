@@ -11,9 +11,7 @@ import java.util.function.IntFunction;
 import kr.bi.greenmate.common.pagination.dto.PageInfo;
 import kr.bi.greenmate.common.pagination.dto.PageResponse;
 import kr.bi.greenmate.common.pagination.CursorCodec.Payload;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 커서 기반(Keyset) 페이지네이션 오케스트레이터.
@@ -26,18 +24,16 @@ import org.springframework.web.server.ResponseStatusException;
 public class CursorPaginator {
 
   /**
-   * @param defaultSize 기본 페이지 크기
-   * @param maxSize     허용 최대 페이지 크기
-   * @param reqSize     요청된 페이지 크기(옵셔널)
-   * @param cursor      커서 문자열(옵셔널, Base64 URL-safe)
-   *
-   * @param fetchFirst  첫 페이지 조회: desc 정렬, (take) -> rows(desc)
-   * @param fetchNext   다음 페이지 조회: (cAt, cId, take) -> rows(desc)
+   * @param defaultSize  기본 페이지 크기
+   * @param maxSize      허용 최대 페이지 크기
+   * @param reqSize      요청된 페이지 크기(옵셔널)
+   * @param cursor       커서 문자열(옵셔널, Base64 URL-safe)
+   * @param fetchFirst   첫 페이지 조회: desc 정렬, (take) -> rows(desc)
+   * @param fetchNext    다음 페이지 조회: (cAt, cId, take) -> rows(desc)
    * @param fetchPrevAsc 이전 페이지 조회: (cAt, cId, take) -> rows(asc)
-   *
-   * @param createdAt   엔티티에서 커서 키(createdAt) 추출자
-   * @param id          엔티티에서 커서 키(id) 추출자
-   * @param mapper      엔티티 -> DTO 변환자
+   * @param createdAt    엔티티에서 커서 키(createdAt) 추출자
+   * @param id           엔티티에서 커서 키(id) 추출자
+   * @param mapper       엔티티 -> DTO 변환자
    */
 
   public <E, T> PageResponse<T> paginate(
@@ -67,12 +63,10 @@ public class CursorPaginator {
       Payload p = CursorCodec.decode(cursor);
       if ("next".equals(p.getDirection())) {
         rows = fetchNext.apply(p.getCreatedAt(), p.getId(), limit + 1);
-      } else if ("prev".equals(p.getDirection())) {
+      } else {
         // prev: ASC로 가져와서 화면 노출은 최신→과거(desc)로 맞추기 위해 reverse
         rows = fetchPrevAsc.apply(p.getCreatedAt(), p.getId(), limit + 1);
         Collections.reverse(rows);
-      } else {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 커서 방향입니다.");
       }
     }
 
