@@ -11,12 +11,15 @@ import kr.bi.greenmate.config.properties.JwtProperties;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class AuthService {
@@ -27,6 +30,7 @@ public class AuthService {
     private final JwtProperties jwtProperties;
     private final RefreshTokenRepository refreshTokenRepository;
 
+    @Transactional
     public TokenResponse login(LoginRequest request, HttpServletRequest servletRequest) {
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new IllegalArgumentException("로그인 정보에 일치하는 회원이 없습니다."));
@@ -44,6 +48,7 @@ public class AuthService {
         return createTokenResponse(accessToken, refreshToken);
     }
 
+    @Transactional
     public TokenResponse reissueToken(ReissueTokenRequest request) {
         String refreshTokenValue = request.getRefreshToken();
         if (jwtUtil.isExpired(refreshTokenValue)) {
@@ -100,6 +105,7 @@ public class AuthService {
     }
 
     private void saveRefreshToken(User user, String tokenValue, HttpServletRequest servletRequest) {
+        log.info("userId: {}, IP: {}, userAgent: {}", user.getId(), getIp(servletRequest), servletRequest.getHeader("User-Agent"));
         Optional<RefreshToken> existingRefreshToken = refreshTokenRepository.findByUserAndIssuedIpAndIssuedUserAgent(user, getIp(servletRequest), servletRequest.getHeader("User-Agent"));
         LocalDateTime expiredAt = jwtUtil.getExpiredAt(jwtProperties.getRefreshTokenValidityInMs());
 
