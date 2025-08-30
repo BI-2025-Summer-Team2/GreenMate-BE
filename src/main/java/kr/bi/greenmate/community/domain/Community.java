@@ -49,6 +49,7 @@ public class Community extends BaseTimeEntity {
     @Column(nullable = false)
     private Integer commentCount = 0;
 
+    @Builder.Default
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityImage> images = new ArrayList<>();
 
