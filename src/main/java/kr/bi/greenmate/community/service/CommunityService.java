@@ -6,7 +6,6 @@ import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.community.domain.CommunityImage;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
-import kr.bi.greenmate.community.repository.CommunityImageRepository;
 import kr.bi.greenmate.community.repository.CommunityPostRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
@@ -30,26 +28,20 @@ public class CommunityService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final CommunityPostRepository postRepository;
-    private final CommunityImageRepository imageRepository;
 
     @Transactional
     public void createPost(CreateCommunityPostRequest request, List<MultipartFile> imageFiles) {
         Community communityPost = createCommunity(request);
-        postRepository.save(communityPost);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
-            List<CommunityImage> images = new ArrayList<>();
             for (MultipartFile imageFile : imageFiles) {
                 if (imageFile == null || imageFile.isEmpty()) {
                     continue;
                 }
-                images.add(saveImageFile(imageFile, communityPost));
-            }
-            if (!images.isEmpty()) {
-                imageRepository.saveAll(images);
-                communityPost.updateImages(images);
+                communityPost.getImages().add(createImageEntity(imageFile, communityPost));
             }
         }
+        postRepository.save(communityPost);
     }
 
     private Community createCommunity(CreateCommunityPostRequest request) {
@@ -60,8 +52,7 @@ public class CommunityService {
                 .build();
     }
 
-    private CommunityImage saveImageFile(MultipartFile imageFile, Community post) {
-
+    private CommunityImage createImageEntity(MultipartFile imageFile, Community post) {
         try {
             String imageUrl = fileStorageService.uploadFile(imageFile, FilePath.COMMUNITY_POST.getPath());
             log.info("imageUrl: {}", imageUrl);

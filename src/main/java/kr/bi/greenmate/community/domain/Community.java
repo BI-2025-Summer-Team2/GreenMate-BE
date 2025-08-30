@@ -52,8 +52,4 @@ public class Community extends BaseTimeEntity {
     @Builder.Default
     @OneToMany(mappedBy = "community", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CommunityImage> images = new ArrayList<>();
-
-    public void updateImages(List<CommunityImage> images) {
-        this.images = images;
-    }
 }
