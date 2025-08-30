@@ -35,7 +35,7 @@ public class RecyclingEduPostService {
   /**
    * 단일 조회
    */
-  public RecyclingEduPostResponse getPostById(Long id) {
+  public RecyclingEduPostResponse getPostDetail(Long id) {
     RecyclingEduPost post = repository.findById(id)
         .orElseThrow(() ->
             new ResourceNotFoundException("해당 분리수거 학습글이 존재하지 않습니다."));
