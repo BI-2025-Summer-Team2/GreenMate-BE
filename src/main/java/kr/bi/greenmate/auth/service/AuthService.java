@@ -91,7 +91,15 @@ public class AuthService {
     }
 
     private String getIp(HttpServletRequest servletRequest) {
-        String ip = servletRequest.getHeader("X-Forwarded-For");
+        String ip = servletRequest.getHeader("CF-Connecting-IP");
+
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+            ip = servletRequest.getHeader("X-Forwarded-For");
+        }
+        // XFF 헤더에 IP가 여러 개일 경우
+        if (ip != null && !ip.isEmpty() && !"unknown".equalsIgnoreCase(ip)) {
+            ip = ip.split(",")[0];
+        }
         if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = servletRequest.getHeader("Proxy-Client-IP");
         }
