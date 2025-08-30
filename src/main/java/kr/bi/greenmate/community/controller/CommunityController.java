@@ -28,8 +28,8 @@ public class CommunityController {
     private final CommunityService communityService;
 
     @Operation(summary = "커뮤니티 글 생성", description = "작성된 글(JSON)과 이미지(파일)를 DB에 저장합니다.")
-    @PostMapping(value = "/create-post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> createPost(@RequestPart("writing") @Valid CreateCommunityPostRequest request,
+    @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> posts(@RequestPart("writing") @Valid CreateCommunityPostRequest request,
                                            @RequestPart(value = "imageFiles", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
         communityService.createPost(request, imageFiles);
         return ResponseEntity.status(HttpStatus.CREATED).build();

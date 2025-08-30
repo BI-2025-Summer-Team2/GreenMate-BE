@@ -6,7 +6,7 @@ import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.community.domain.CommunityImage;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
-import kr.bi.greenmate.community.repository.CommunityPostRepository;
+import kr.bi.greenmate.community.repository.CommunityRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +27,7 @@ public class CommunityService {
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
-    private final CommunityPostRepository postRepository;
+    private final CommunityRepository postRepository;
 
     @Transactional
     public void createPost(CreateCommunityPostRequest request, List<MultipartFile> imageFiles) {

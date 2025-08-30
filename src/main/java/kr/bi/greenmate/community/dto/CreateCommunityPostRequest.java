@@ -12,6 +12,7 @@ import lombok.Getter;
 @Builder
 public class CreateCommunityPostRequest {
 
+    // TODO: 인증인가 처리 merge 후 로그인한 유저로 대체
     @Schema(description = "작성자 id", example = "1")
     @NotNull(message = "작성자 id 필수")
     private Long userId;
