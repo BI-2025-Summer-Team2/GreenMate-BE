@@ -6,7 +6,8 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum FilePath {
-    USER_PROFILE("/user/profile");
+    USER_PROFILE("/user/profile"),
+    COMMUNITY_POST("/community");
 
     private final String path;
 }
