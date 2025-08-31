@@ -27,7 +27,7 @@ public class CommunityService {
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
-    private final CommunityRepository postRepository;
+    private final CommunityRepository communityRepository;
 
     @Transactional
     public void createPost(Long userId, CreateCommunityPostRequest request, List<MultipartFile> imageFiles) {
@@ -41,7 +41,7 @@ public class CommunityService {
                 communityPost.getImages().add(createImageEntity(imageFile, communityPost));
             }
         }
-        postRepository.save(communityPost);
+        communityRepository.save(communityPost);
     }
 
     private Community createCommunity(Long userId, CreateCommunityPostRequest request) {
