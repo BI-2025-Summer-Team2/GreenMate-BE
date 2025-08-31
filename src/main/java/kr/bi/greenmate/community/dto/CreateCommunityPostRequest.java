@@ -12,11 +12,6 @@ import lombok.Getter;
 @Builder
 public class CreateCommunityPostRequest {
 
-    // TODO: 인증인가 처리 merge 후 로그인한 유저로 대체
-    @Schema(description = "작성자 id", example = "1")
-    @NotNull(message = "작성자 id 필수")
-    private Long userId;
-
     @Schema(description = "게시글 제목", example = "길거리 청소왕 인사 올립니다.")
     @Size(max = 20, message = "커뮤니티 게시글 제목 20자 이하")
     @NotBlank(message = "게시글 제목 필수")
