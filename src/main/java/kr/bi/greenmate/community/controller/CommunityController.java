@@ -35,9 +35,6 @@ public class CommunityController {
     public ResponseEntity<Void> posts(@AuthenticationPrincipal CustomUserDetails userDetails,
                                       @RequestPart("writing") @Valid CreateCommunityPostRequest request,
                                       @RequestPart(value = "imageFiles", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
-        if (userDetails == null) {
-            throw new AuthenticationCredentialsNotFoundException("로그인이 필요합니다.");
-        }
         Long userId = Long.valueOf(userDetails.getUsername());
         communityService.createPost(userId, request, imageFiles);
         return ResponseEntity.status(HttpStatus.CREATED).build();
