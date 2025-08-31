@@ -30,8 +30,8 @@ public class CommunityService {
     private final CommunityRepository postRepository;
 
     @Transactional
-    public void createPost(CreateCommunityPostRequest request, List<MultipartFile> imageFiles) {
-        Community communityPost = createCommunity(request);
+    public void createPost(Long userId, CreateCommunityPostRequest request, List<MultipartFile> imageFiles) {
+        Community communityPost = createCommunity(userId, request);
 
         if (imageFiles != null && !imageFiles.isEmpty()) {
             for (MultipartFile imageFile : imageFiles) {
@@ -44,9 +44,9 @@ public class CommunityService {
         postRepository.save(communityPost);
     }
 
-    private Community createCommunity(CreateCommunityPostRequest request) {
+    private Community createCommunity(Long userId, CreateCommunityPostRequest request) {
         return Community.builder()
-                .user(userRepository.findById(request.getUserId()).orElseThrow(() -> new IllegalArgumentException("등록되지 않은 회원입니다.")))
+                .user(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("등록되지 않은 회원입니다.")))
                 .title(request.getTitle())
                 .content(request.getContent())
                 .build();

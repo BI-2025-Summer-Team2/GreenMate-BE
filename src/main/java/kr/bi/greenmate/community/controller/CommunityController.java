@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import kr.bi.greenmate.auth.dto.CustomUserDetails;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
 import kr.bi.greenmate.community.service.CommunityService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -29,9 +32,14 @@ public class CommunityController {
 
     @Operation(summary = "커뮤니티 글 생성", description = "작성된 글(JSON)과 이미지(파일)를 DB에 저장합니다.")
     @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> posts(@RequestPart("writing") @Valid CreateCommunityPostRequest request,
-                                           @RequestPart(value = "imageFiles", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
-        communityService.createPost(request, imageFiles);
+    public ResponseEntity<Void> posts(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                      @RequestPart("writing") @Valid CreateCommunityPostRequest request,
+                                      @RequestPart(value = "imageFiles", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
+        if (userDetails == null) {
+            throw new AuthenticationCredentialsNotFoundException("로그인이 필요합니다.");
+        }
+        Long userId = Long.valueOf(userDetails.getUsername());
+        communityService.createPost(userId, request, imageFiles);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }
