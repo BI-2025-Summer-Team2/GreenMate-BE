@@ -22,7 +22,7 @@ public class SecurityConfig {
     private static final String[] AUTH_WHITELIST = {
             "/api/v1/auth/login",
             "/api/v1/auth/reissue-token",
-            "/api/v1/signup",
+            "/api/v1/user/signup",
             "/",
             // Swagger UI
             "/api-docs/**",
