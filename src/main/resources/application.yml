@@ -14,6 +14,9 @@ spring:
   threads:
     virtual:
       enabled: true
+  jwt:
+    access-token-validity-in-ms: 3600000 #1시간
+    refresh-token-validity-in-ms: 604800000 #7일
 management:
   endpoint:
     health:
