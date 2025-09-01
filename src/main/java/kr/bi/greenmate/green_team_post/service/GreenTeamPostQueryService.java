@@ -48,8 +48,8 @@ public class GreenTeamPostQueryService {
     Pageable pageable = Pageable.ofSize(size);
 
     Slice<GreenTeamPost> slice = (cursorId == null)
-        ? postRepository.findAllByOrderByCreatedAtDescIdDesc(pageable)
-        : postRepository.findByIdLessThanOrderByCreatedAtDescIdDesc(cursorId, pageable);
+        ? postRepository.findAllByOrderByIdDesc(pageable)
+        : postRepository.findByIdLessThanOrderByIdDesc(cursorId, pageable);
 
     Slice<GreenTeamPostSummaryResponse> mapped = slice.map(GreenTeamPostSummaryResponse::from);
 
