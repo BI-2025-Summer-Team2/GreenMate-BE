@@ -1,6 +1,7 @@
 package kr.bi.greenmate.term.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kr.bi.greenmate.term.domain.Term;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,4 +24,14 @@ public class TermResponse {
 
     @Schema(description = "필수 여부", example = "true")
     private boolean mandatory;
+
+    public static TermResponse from(Term term) {
+        return builder()
+                .id(term.getId())
+                .title(term.getTitle())
+                .content(term.getContent())
+                .mandatory(term.isMandatory())
+                .build();
+    }
+
 }

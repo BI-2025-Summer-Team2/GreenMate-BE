@@ -18,8 +18,8 @@ import java.util.List;
 public class TermController {
     private final TermService termService;
 
-    @GetMapping("/")
-    public ResponseEntity<List<TermResponse>> getAllTerms(){
+    @GetMapping
+    public ResponseEntity<List<TermResponse>> getAllTerms() {
         List<TermResponse> terms = termService.getAllTermsAsDto();
         return ResponseEntity.ok(terms);
     }

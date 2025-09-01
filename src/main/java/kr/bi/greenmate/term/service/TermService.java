@@ -16,18 +16,13 @@ public class TermService {
     private final TermRepository termRepository;
 
     @Cacheable(value = "terms")
-    public List<Term> getAllTerms(){
+    public List<Term> getAllTerms() {
         return termRepository.findAll();
     }
 
-    public List<TermResponse> getAllTermsAsDto(){
+    public List<TermResponse> getAllTermsAsDto() {
         return getAllTerms().stream()
-                .map(term -> TermResponse.builder()
-                        .id(term.getId())
-                        .title(term.getTitle())
-                        .content(term.getContent())
-                        .mandatory(term.isMandatory())
-                        .build())
+                .map(TermResponse::from)
                 .collect(Collectors.toList());
     }
 }
