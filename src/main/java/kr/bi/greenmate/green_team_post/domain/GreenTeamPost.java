@@ -13,8 +13,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
@@ -33,11 +31,6 @@ import kr.bi.greenmate.user.domain.User;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(
-    indexes = {
-        @Index(name = "idx_green_team_post_created_at_id", columnList = "createdAt DESC, id DESC")
-    }
-)
 public class GreenTeamPost extends BaseTimeEntity {
 
   @Id
