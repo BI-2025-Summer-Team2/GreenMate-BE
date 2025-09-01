@@ -45,18 +45,7 @@ public class GreenTeamPostQueryService {
   }
 
   public CursorSliceResponse<GreenTeamPostSummaryResponse> getPostList(Long cursorId, int size) {
-    if (size < 1 || size > 100) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.GTP_40006.status(),
-          GreenTeamPostErrorCode.GTP_40006.code()
-      );
-    }
-
-    Pageable pageable = PageRequest.of(
-        0,
-        size,
-        Sort.by(Sort.Order.desc("createdAt"), Sort.Order.desc("id"))
-    );
+    Pageable pageable = Pageable.ofSize(size);
 
     Slice<GreenTeamPost> slice = (cursorId == null)
         ? postRepository.findAllByOrderByCreatedAtDescIdDesc(pageable)

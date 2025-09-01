@@ -9,7 +9,6 @@ public enum GreenTeamPostErrorCode {
   GTP_40003("GTP-40003", HttpStatus.BAD_REQUEST, "모집 종료일은 활동일 이전이어야 합니다."),
   GTP_40004("GTP-40004", HttpStatus.BAD_REQUEST, "최대 참가 인원은 1명 이상이어야 합니다."),
   GTP_40005("GTP-40005", HttpStatus.BAD_REQUEST, "이미지는 최대 3장까지 업로드 가능합니다."),
-  GTP_40006("GTP-40006", HttpStatus.BAD_REQUEST, "커서의 size는 1~100 사이여야 합니다."),
   GENERIC_40001("GENERIC-40001", HttpStatus.BAD_REQUEST, "잘못된 요청입니다."),
 
   AUTH_40101("AUTH-40101", HttpStatus.UNAUTHORIZED, "로그인이 필요합니다."),

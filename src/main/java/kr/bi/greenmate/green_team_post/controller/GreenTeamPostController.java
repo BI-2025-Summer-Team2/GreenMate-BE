@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -80,7 +81,10 @@ public class GreenTeamPostController {
   @GetMapping
   public ResponseEntity<CursorSliceResponse<GreenTeamPostSummaryResponse>> list(
       @RequestParam(required = false) Long cursorId,
-      @RequestParam(defaultValue = "20") int size
+      @RequestParam(defaultValue = "20")
+      @Min(value = 1, message = "size는 1 이상이어야 합니다.")
+      @Max(value = 100, message = "size는 100 이하여야 합니다.")
+      int size
   ) {
     return ResponseEntity.ok(queryService.getPostList(cursorId, size));
   }
