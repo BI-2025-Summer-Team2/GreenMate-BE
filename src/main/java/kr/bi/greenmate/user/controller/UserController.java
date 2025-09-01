@@ -11,8 +11,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,5 +34,12 @@ public class UserController {
 
         userService.signUp(request, profileImage);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(summary = "닉네임 중복 확인", description = "닉네임의 중복 여부를 확인합니다.")
+    @RequestMapping(value = "/nicknames/{nickname}", method = RequestMethod.HEAD)
+    public ResponseEntity<Void> checkNicknameExistence(@PathVariable String nickname){
+        userService.validateNicknameIsUnique(nickname);
+        return ResponseEntity.noContent().build();
     }
 }

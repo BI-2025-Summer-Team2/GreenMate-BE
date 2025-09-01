@@ -8,6 +8,7 @@ import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.repository.TermRepository;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.domain.UserAgreement;
+import kr.bi.greenmate.user.domain.UserAgreementId;
 import kr.bi.greenmate.user.dto.SignUpRequest;
 import kr.bi.greenmate.user.dto.SignUpTermAgreement;
 import kr.bi.greenmate.user.exception.DuplicateEmailException;
@@ -79,7 +80,7 @@ public class UserService {
         }
     }
 
-    private void validateNicknameIsUnique(String nickname) {
+    public void validateNicknameIsUnique(String nickname) {
 
         if (userRepository.existsByNickname(nickname)) {
             throw new DuplicateNicknameException(nickname);
@@ -162,12 +163,16 @@ public class UserService {
     private void saveUserAgreements(User user, List<SignUpTermAgreement> signUpTermAgreements, Map<Long, Term> termMap) {
 
         List<UserAgreement> entities = signUpTermAgreements.stream()
-                .map(signUpTermAgreement ->
-                        UserAgreement.builder()
-                                .user(user)
-                                .term(termMap.get(signUpTermAgreement.getTermId()))
-                                .agreed(signUpTermAgreement.getAgreed())
-                                .build())
+                .map(signUpTermAgreement -> {
+                    Term term = termMap.get(signUpTermAgreement.getTermId());
+                    UserAgreementId userAgreementId = new UserAgreementId(user.getId(), term.getId());
+                    return UserAgreement.builder()
+                            .id(userAgreementId)
+                            .user(user)
+                            .term(term)
+                            .agreed(signUpTermAgreement.getAgreed())
+                            .build();
+                })
                 .collect(Collectors.toList());
         userAgreementRepository.saveAll(entities);
     }
