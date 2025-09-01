@@ -6,6 +6,7 @@ import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.repository.TermRepository;
+import kr.bi.greenmate.term.service.TermService;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.domain.UserAgreement;
 import kr.bi.greenmate.user.domain.UserAgreementId;
@@ -39,7 +40,7 @@ import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final TermRepository termRepository;
+    private final TermService termService;
     private final UserAgreementRepository userAgreementRepository;
     private final PasswordEncoder passwordEncoder;
     private final FileStorageService fileStorageService;
@@ -55,7 +56,7 @@ public class UserService {
         validateEmailIsUnique(email);
         validateNicknameIsUnique(nickname);
 
-        List<Term> terms = termRepository.findAll();
+        List<Term> terms = termService.getAllTerms();
         Map<Long, Term> termMap = terms.stream()
                 .collect(Collectors.toMap(Term::getId, term -> term));
 

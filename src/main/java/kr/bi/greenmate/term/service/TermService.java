@@ -1,5 +1,6 @@
 package kr.bi.greenmate.term.service;
 
+import kr.bi.greenmate.term.domain.Term;
 import kr.bi.greenmate.term.dto.TermResponse;
 import kr.bi.greenmate.term.repository.TermRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,8 +16,12 @@ public class TermService {
     private final TermRepository termRepository;
 
     @Cacheable(value = "terms")
-    public List<TermResponse> getAllTerms(){
-        return termRepository.findAll().stream()
+    public List<Term> getAllTerms(){
+        return termRepository.findAll();
+    }
+
+    public List<TermResponse> getAllTermsAsDto(){
+        return getAllTerms().stream()
                 .map(term -> TermResponse.builder()
                         .id(term.getId())
                         .title(term.getTitle())

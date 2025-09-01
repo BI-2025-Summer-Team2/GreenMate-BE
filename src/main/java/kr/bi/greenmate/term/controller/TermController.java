@@ -20,7 +20,7 @@ public class TermController {
 
     @GetMapping("/")
     public ResponseEntity<List<TermResponse>> getAllTerms(){
-        List<TermResponse> terms = termService.getAllTerms();
+        List<TermResponse> terms = termService.getAllTermsAsDto();
         return ResponseEntity.ok(terms);
     }
 }
