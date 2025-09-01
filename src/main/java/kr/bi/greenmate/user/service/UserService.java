@@ -5,7 +5,6 @@ import kr.bi.greenmate.common.domain.FilePath;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.term.domain.Term;
-import kr.bi.greenmate.term.repository.TermRepository;
 import kr.bi.greenmate.term.service.TermService;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.domain.UserAgreement;
@@ -21,7 +20,6 @@ import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -81,7 +79,7 @@ public class UserService {
         }
     }
 
-    private void validateNicknameIsUnique(String nickname) {
+    public void validateNicknameIsUnique(String nickname) {
 
         if (userRepository.existsByNickname(nickname)) {
             throw new DuplicateNicknameException(nickname);
