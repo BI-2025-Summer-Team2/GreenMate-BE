@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import java.net.URI;
@@ -20,13 +21,16 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import kr.bi.greenmate.common.dto.IdResponse;
+import kr.bi.greenmate.common.dto.CursorSliceResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostDetailResponse;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostCommandService;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostQueryService;
@@ -71,6 +75,18 @@ public class GreenTeamPostController {
         .toUri();
 
     return ResponseEntity.created(location).body(new IdResponse(id));
+  }
+
+  @Operation(summary = "환경 활동 모집글 목록 조회", description = "최신 등록순으로 환경 활동 모집글 전체 목록을 반환합니다.")
+  @GetMapping
+  public ResponseEntity<CursorSliceResponse<GreenTeamPostSummaryResponse>> list(
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "20")
+      @Min(value = 1, message = "size는 1 이상이어야 합니다.")
+      @Max(value = 100, message = "size는 100 이하여야 합니다.")
+      int size
+  ) {
+    return ResponseEntity.ok(queryService.getPostList(cursorId, size));
   }
 
   @Operation(summary = "환경 활동 단일 모집글 조회", description = "특정 ID의 환경 활동 모집글을 조회합니다.")
