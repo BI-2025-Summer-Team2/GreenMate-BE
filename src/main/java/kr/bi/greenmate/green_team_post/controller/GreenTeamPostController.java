@@ -67,13 +67,13 @@ public class GreenTeamPostController {
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<IdResponse> createGreenTeamPost(
-      @AuthenticationPrincipal CustomUserDetails user,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
       @Valid @RequestPart("data") GreenTeamPostCreateRequest data,
       @RequestPart(value = "images", required = false) List<MultipartFile> images
   ) {
     List<MultipartFile> safeImages = (images == null) ? List.of() : images;
 
-    Long userId = Long.parseLong(user.getUsername());
+    Long userId = userDetails.getId();
 
     Long id = commandService.create(userId, data, safeImages);
 

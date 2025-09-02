@@ -12,7 +12,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,15 +27,16 @@ import java.util.List;
 @RequestMapping("/api/v1/community")
 @RestController
 public class CommunityController {
-    private final CommunityService communityService;
 
-    @Operation(summary = "커뮤니티 글 생성", description = "작성된 글(JSON)과 이미지(파일)를 DB에 저장합니다.")
-    @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Void> posts(@AuthenticationPrincipal CustomUserDetails userDetails,
-                                      @RequestPart("writing") @Valid CreateCommunityPostRequest request,
-                                      @RequestPart(value = "imageFiles", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
-        Long userId = Long.valueOf(userDetails.getUsername());
-        communityService.createPost(userId, request, imageFiles);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
+  private final CommunityService communityService;
+
+  @Operation(summary = "커뮤니티 글 생성", description = "작성된 글(JSON)과 이미지(파일)를 DB에 저장합니다.")
+  @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<Void> posts(@AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestPart("writing") @Valid CreateCommunityPostRequest request,
+      @RequestPart(value = "imageFiles", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
+    Long userId = userDetails.getId();
+    communityService.createPost(userId, request, imageFiles);
+    return ResponseEntity.status(HttpStatus.CREATED).build();
+  }
 }

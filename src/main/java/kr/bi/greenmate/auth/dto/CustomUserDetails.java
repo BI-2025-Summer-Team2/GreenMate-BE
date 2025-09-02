@@ -9,23 +9,28 @@ import java.util.Collections;
 
 @RequiredArgsConstructor
 public class CustomUserDetails implements UserDetails {
-    private final String userId;
-    private final String userEmail;
-    private final String userNickname;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
-    }
+  private final String userId;
+  private final String userEmail;
+  private final String userNickname;
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
+  public Long getId() {
+    return Long.valueOf(userId);
+  }
 
-    @Override
-    public String getUsername() {
-        return this.userId;
-    }
+  @Override
+  public String getPassword() {
+    return null;
+  }
+
+  @Override
+  public String getUsername() {
+    return this.userNickname;
+  }
+
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return Collections.emptyList();
+  }
 
 }
