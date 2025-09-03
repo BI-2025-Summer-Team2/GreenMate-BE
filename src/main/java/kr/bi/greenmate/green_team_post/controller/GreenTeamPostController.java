@@ -6,17 +6,22 @@ import io.swagger.v3.oas.annotations.media.Encoding;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
 import java.net.URI;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,18 +32,20 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import kr.bi.greenmate.common.dto.IdResponse;
 import kr.bi.greenmate.common.dto.CursorSliceResponse;
+import kr.bi.greenmate.common.dto.IdResponse;
+import kr.bi.greenmate.auth.dto.CustomUserDetails;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
-import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostDetailResponse;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostCommandService;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostQueryService;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/green-team-posts")
-@Tag(name = "환경 활동 모집글 API", description = "환경 활동 모집글 생성 API")
+@Tag(name = "환경 활동 모집글 API", description = "환경 활동 모집글 API")
 public class GreenTeamPostController {
 
   private final GreenTeamPostCommandService commandService;
@@ -57,19 +64,20 @@ public class GreenTeamPostController {
           )
       )
   )
+  @SecurityRequirement(name = "bearerAuth")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<IdResponse> createGreenTeamPost(
-      @Valid
-      @RequestPart("data") GreenTeamPostCreateRequest data,
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @Valid @RequestPart("data") GreenTeamPostCreateRequest data,
       @RequestPart(value = "images", required = false) List<MultipartFile> images
   ) {
     List<MultipartFile> safeImages = (images == null) ? List.of() : images;
 
-    Long userId = 1L; // TODO: 유저 인증 기능 구현 후 삭제
+    Long userId = userDetails.getId();
+
     Long id = commandService.create(userId, data, safeImages);
 
-    URI location = ServletUriComponentsBuilder
-        .fromCurrentRequest()
+    URI location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path("/{id}")
         .buildAndExpand(id)
         .toUri();
@@ -92,11 +100,7 @@ public class GreenTeamPostController {
   @Operation(summary = "환경 활동 단일 모집글 조회", description = "특정 ID의 환경 활동 모집글을 조회합니다.")
   @GetMapping("/{id}")
   public ResponseEntity<GreenTeamPostDetailResponse> getGreenTeamPostById(
-      @Parameter(
-          description = "조회할 환경 활동 모집글 ID (1 이상의 정수)",
-          required = true,
-          example = "1"
-      )
+      @Parameter(description = "모집글 ID (1 이상)", required = true, example = "1")
       @PathVariable @NotNull @Min(1) Long id
   ) {
     return ResponseEntity.ok(queryService.getPostDetail(id));
