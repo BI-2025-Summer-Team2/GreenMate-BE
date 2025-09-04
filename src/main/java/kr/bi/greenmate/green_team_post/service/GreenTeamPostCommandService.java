@@ -27,7 +27,6 @@ import lombok.RequiredArgsConstructor;
 public class GreenTeamPostCommandService {
 
   private static final String IMAGE_DIR = "green-team-posts";
-  private static final int MAX_IMAGE_COUNT = 3;
 
   private final GreenTeamPostRepository postRepository;
   private final GreenTeamPostImageRepository imageRepository;
@@ -40,15 +39,14 @@ public class GreenTeamPostCommandService {
   /**
    * 환경 활동 모집글 생성
    *
-   * @param userId 작성자 ID
-   * @param req    게시글 생성 요청 DTO(JSON)
-   * @param images 첨부 이미지 파일들(0~3장)
+   * @param userId  작성자 ID
+   * @param request 게시글 생성 요청 DTO(JSON)
    * @return 생성된 게시글 ID
    */
   @Transactional
-  public Long create(Long userId, GreenTeamPostCreateRequest req, List<MultipartFile> images) {
+  public Long create(Long userId, GreenTeamPostCreateRequest request, List<MultipartFile> images) {
     User writer = findWriter(userId);
-    GreenTeamPost post = createPost(writer, req);
+    GreenTeamPost post = createPost(writer, request);
 
     // 이미지가 없을 경우 조기종료
     if (images == null || images.isEmpty()) {
@@ -67,10 +65,10 @@ public class GreenTeamPostCommandService {
         ));
   }
 
-  private GreenTeamPost createPost(User writer, GreenTeamPostCreateRequest req) {
+  private GreenTeamPost createPost(User writer, GreenTeamPostCreateRequest request) {
     String geojsonStr;
     try {
-      geojsonStr = objectMapper.writeValueAsString(req.getLocationGeojson());
+      geojsonStr = objectMapper.writeValueAsString(request.getLocationGeojson());
     } catch (JsonProcessingException e) {
       throw new ResponseStatusException(
           GreenTeamPostErrorCode.GTP_50001.status(),
@@ -81,26 +79,26 @@ public class GreenTeamPostCommandService {
 
     GreenTeamPost post = GreenTeamPost.builder()
         .user(writer)
-        .title(req.getTitle())
-        .content(req.getContent())
-        .locationType(req.getLocationType())
+        .title(request.getTitle())
+        .content(request.getContent())
+        .locationType(request.getLocationType())
         .locationGeojson(geojsonStr) // 문자열로 저장
-        .maxParticipants(req.getMaxParticipants())
-        .eventDate(req.getEventDate())
-        .deadlineAt(req.getDeadlineAt())
+        .maxParticipants(request.getMaxParticipants())
+        .eventDate(request.getEventDate())
+        .deadlineAt(request.getDeadlineAt())
         .build();
 
     return postRepository.save(post);
   }
 
-  private void saveImages(GreenTeamPost post, List<MultipartFile> images) {
-    if (images == null || images.isEmpty()) {
+  private void saveImages(GreenTeamPost post, List<MultipartFile> imageFiles) {
+    if (imageFiles == null || imageFiles.isEmpty()) {
       return;
     }
 
     List<String> keys = Collections.emptyList();
     try {
-      keys = imageService.uploadMany(IMAGE_DIR, images);
+      keys = imageService.uploadMany(IMAGE_DIR, imageFiles);
       List<GreenTeamPostImage> postImages = keys.stream()
           .map(key -> GreenTeamPostImage.builder()
               .post(post)
