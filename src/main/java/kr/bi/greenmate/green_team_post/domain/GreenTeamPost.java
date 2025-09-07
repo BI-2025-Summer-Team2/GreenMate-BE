@@ -76,6 +76,7 @@ public class GreenTeamPost extends BaseTimeEntity {
   @Column(nullable = false)
   private LocalDateTime deadlineAt;
 
+  @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<GreenTeamPostImage> images = new ArrayList<>();
 }
