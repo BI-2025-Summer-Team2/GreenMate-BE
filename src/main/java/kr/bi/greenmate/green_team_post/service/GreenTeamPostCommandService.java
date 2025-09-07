@@ -30,6 +30,7 @@ import kr.bi.greenmate.user.repository.UserRepository;
 public class GreenTeamPostCommandService {
 
   private static final String IMAGE_DIR = "green-team-posts";
+  private static final int MAX_IMAGE_COUNT = 3;
 
   private final GreenTeamPostRepository postRepository;
   private final UserRepository userRepository;
@@ -46,6 +47,14 @@ public class GreenTeamPostCommandService {
    */
   @Transactional
   public Long create(Long userId, GreenTeamPostCreateRequest request, List<MultipartFile> images) {
+
+    if (images != null && images.size() > MAX_IMAGE_COUNT) {
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_40005.status(),
+          GreenTeamPostErrorCode.GTP_40005.code()
+      );
+    }
+
     User writer = findWriter(userId);
     GreenTeamPost post = createPost(writer, request);
 

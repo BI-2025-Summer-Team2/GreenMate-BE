@@ -16,6 +16,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class FileStorageService {
 
+    private static final long MAX_FILE_SIZE = 1_000_000L;
+
     private final ObjectStorageRepository objectStorageRepository;
     private final Tika tika;
 
@@ -24,14 +26,18 @@ public class FileStorageService {
             return null;
         }
 
+        // 파일 크기 검증
+        validateFileSize(file);
+
+        // 확장자/MIME 검증
         ImageFileExtension fileExtension = getFileExtension(file);
 
         String uniqueFileName = UUID.randomUUID() + "." + fileExtension.name().toLowerCase();
 
         String uploadedFileKey = objectStorageRepository.upload(
-                subPath,
-                uniqueFileName,
-                file.getInputStream()
+            subPath,
+            uniqueFileName,
+            file.getInputStream()
         );
 
         return objectStorageRepository.getDownloadUrl(uploadedFileKey);
@@ -39,6 +45,12 @@ public class FileStorageService {
 
     public void deleteFile(String fileUrl) {
         objectStorageRepository.delete(fileUrl);
+    }
+
+    private void validateFileSize(MultipartFile file) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("이미지 파일 크기는 1MB를 초과할 수 없습니다.");
+        }
     }
 
     private ImageFileExtension getFileExtension(MultipartFile file) throws IOException {
@@ -65,7 +77,10 @@ public class FileStorageService {
                 throw new IllegalArgumentException("파일의 MimeType을 확인할 수 없습니다.");
             }
             if (!extension.getMimeType().equals(detectedMimeType.toLowerCase())) {
-                throw new IllegalArgumentException("파일의 MimeType이 확장자와 일치하지 않습니다. " + extension.getMimeType() + "이어야 합니다. : " + detectedMimeType);
+                throw new IllegalArgumentException(
+                    "파일의 MimeType이 확장자와 일치하지 않습니다. " + extension.getMimeType() +
+                        "이어야 합니다. : " + detectedMimeType
+                );
             }
         } catch (IOException e) {
             throw new IOException("파일 읽기 실패", e);
@@ -74,6 +89,6 @@ public class FileStorageService {
 
     private ImageFileExtension getImageFileExtension(String fileExtensionStr) {
         return ImageFileExtension.fromExtension(fileExtensionStr)
-                .orElseThrow(() -> new IllegalArgumentException("이미지 파일에 허용되지 않는 확장자입니다: " + fileExtensionStr));
+            .orElseThrow(() -> new IllegalArgumentException("이미지 파일에 허용되지 않는 확장자입니다: " + fileExtensionStr));
     }
 }
