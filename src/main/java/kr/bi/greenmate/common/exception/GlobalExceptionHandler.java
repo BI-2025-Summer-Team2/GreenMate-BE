@@ -1,6 +1,7 @@
-package kr.bi.greenmate.common.web;
+package kr.bi.greenmate.common.exception;
 
 import jakarta.validation.ConstraintViolationException;
+import kr.bi.greenmate.common.dto.ErrorResponse;
 import kr.bi.greenmate.user.exception.DuplicateEmailException;
 import kr.bi.greenmate.user.exception.DuplicateNicknameException;
 import kr.bi.greenmate.user.exception.RequiredTermNotAgreedException;
