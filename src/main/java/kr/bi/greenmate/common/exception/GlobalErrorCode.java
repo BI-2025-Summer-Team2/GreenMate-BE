@@ -17,7 +17,7 @@ public enum GlobalErrorCode implements ErrorCode {
     INVALID_ARGUMENT(HttpStatus.BAD_REQUEST, "GLOBAL-40001", "요청 인자값이 올바르지 않습니다."),
     MISSING_REQUIRED_PARAMETER(HttpStatus.BAD_REQUEST, "GLOBAL-40002", "필수 요청 파라미터가 누락되었습니다."),
     INVALID_PARAMETER_FORMAT(HttpStatus.BAD_REQUEST, "GLOBAL-40003", "요청 파라미터의 형식이 올바르지 않습니다."),
-    INVALID_HTTP_METHOD(HttpStatus.BAD_REQUEST, "GLOBAL-40003", "지원하지 않는 HTTP 메서드입니다."),
+    INVALID_HTTP_METHOD(HttpStatus.BAD_REQUEST, "GLOBAL-40004", "지원하지 않는 HTTP 메서드입니다."),
 
     RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "GLOBAL-40401", "요청한 리소스를 찾을 수 없습니다."),
 
