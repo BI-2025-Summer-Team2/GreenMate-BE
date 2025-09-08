@@ -1,5 +1,7 @@
 package kr.bi.greenmate.common.aop;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import kr.bi.greenmate.common.annotation.CacheableWithTTL;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +22,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class CacheAop {
 
+    private static final String CACHE_KEY_SEPARATOR = "::";
     private final RedisTemplate<String, Object> redisTemplate;
+    private final ObjectMapper objectMapper;
 
     @Around("@annotation(kr.bi.greenmate.common.annotation.CacheableWithTTL)")
     public Object cacheProcess(final ProceedingJoinPoint joinPoint) throws Throwable {
@@ -49,8 +53,18 @@ public class CacheAop {
     }
 
     private String createCacheKey(String cacheName, Object[] args) {
-        return cacheName + "::" + String.join("-", Arrays.stream(args)
-                .map(String::valueOf)
-                .toArray(String[]::new));
+        StringBuilder keyBuilder = new StringBuilder(cacheName);
+        if (args == null || args.length == 0) {
+            keyBuilder.append(CACHE_KEY_SEPARATOR).append("[]");
+            return keyBuilder.toString();
+        }
+        try{
+            String argsAsJson = objectMapper.writeValueAsString(args);
+            keyBuilder.append(CACHE_KEY_SEPARATOR).append(argsAsJson);
+        } catch (JsonProcessingException e) {
+            log.warn("Failed to serialize cache key args to JSON: {}", args);
+            throw new RuntimeException(e);
+        }
+        return keyBuilder.toString();
     }
 }
