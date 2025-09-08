@@ -18,14 +18,14 @@ import java.util.stream.Collectors;
 public class TermService {
     private final TermRepository termRepository;
 
-    @CacheableWithTTL(cacheName = "terms-summary", ttl = 12, unit = TimeUnit.HOURS)
+    @CacheableWithTTL(cacheName = "terms-summary", ttl = 10, unit = TimeUnit.MINUTES)
     public Set<TermTitleResponse> getTermSummary() {
         return getAllTerms().stream()
                 .map(TermTitleResponse::from)
                 .collect(Collectors.toSet());
     }
 
-    @CacheableWithTTL(cacheName = "term", ttl = 12, unit = TimeUnit.HOURS)
+    @CacheableWithTTL(cacheName = "term", ttl = 10, unit = TimeUnit.MINUTES)
     public TermResponse getTermById(long id) {
         return TermResponse.from(termRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 약관 id입니다.")));
     }
