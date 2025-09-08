@@ -9,12 +9,13 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.redisson.api.RBucket;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 @Aspect
 @Component
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class CacheAop {
 
     private static final String CACHE_KEY_SEPARATOR = "::";
-    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedissonClient redissonClient;
     private final ObjectMapper objectMapper;
 
     @Around("@annotation(kr.bi.greenmate.common.annotation.CacheableWithTTL)")
@@ -35,19 +36,20 @@ public class CacheAop {
 
         String cacheName = cacheableWithTTL.cacheName();
         long ttl = cacheableWithTTL.ttl();
-        TimeUnit unit = cacheableWithTTL.unit();
+        ChronoUnit unit = cacheableWithTTL.unit();
 
         String key = createCacheKey(cacheName, joinPoint.getArgs());
 
-        Object cachedValue = redisTemplate.opsForValue().get(key);
+        RBucket<Object> bucket = redissonClient.getBucket(key);
+        Object cachedValue = bucket.get();
 
         if (cachedValue != null) {
             return cachedValue;
         }
         Object result = joinPoint.proceed();
         if (result != null) {
-            log.debug("Create new cache key: {}, TTL: {}", key, ttl);
-            redisTemplate.opsForValue().set(key, result, ttl, unit);
+            log.debug("Create new cache key: {}, TTL: {}, unit: {}", key, ttl, unit);
+            bucket.set(result, Duration.of(ttl, unit));
         }
         return result;
     }
@@ -58,7 +60,7 @@ public class CacheAop {
             keyBuilder.append(CACHE_KEY_SEPARATOR).append("[]");
             return keyBuilder.toString();
         }
-        try{
+        try {
             String argsAsJson = objectMapper.writeValueAsString(args);
             keyBuilder.append(CACHE_KEY_SEPARATOR).append(argsAsJson);
         } catch (JsonProcessingException e) {
