@@ -1,6 +1,5 @@
 package kr.bi.greenmate.community.service;
 
-import kr.bi.greenmate.common.domain.FilePath;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
@@ -24,6 +23,9 @@ import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
 @RequiredArgsConstructor
 @Service
 public class CommunityService {
+
+    private static final String IMAGE_DIR = "/community";
+
     private final FileStorageService fileStorageService;
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
@@ -54,7 +56,7 @@ public class CommunityService {
 
     private CommunityImage createImageEntity(MultipartFile imageFile, Community post) {
         try {
-            String imageUrl = fileStorageService.uploadFile(imageFile, FilePath.COMMUNITY_POST.getPath());
+            String imageUrl = fileStorageService.uploadFile(imageFile, IMAGE_DIR);
             log.info("imageUrl: {}", imageUrl);
             // 롤백 대비
             eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));

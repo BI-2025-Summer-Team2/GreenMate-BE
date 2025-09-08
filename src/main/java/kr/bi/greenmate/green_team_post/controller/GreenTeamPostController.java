@@ -51,31 +51,16 @@ public class GreenTeamPostController {
   private final GreenTeamPostCommandService commandService;
   private final GreenTeamPostQueryService queryService;
 
-  @Operation(
-      summary = "환경 활동 모집글 생성",
-      description = "멀티파트 요청: `data`(application/json) + `images`(파일 배열, 0~3장)",
-      requestBody = @RequestBody(
-          content = @Content(
-              mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
-              encoding = {
-                  @Encoding(name = "data", contentType = MediaType.APPLICATION_JSON_VALUE),
-                  @Encoding(name = "images", contentType = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-              }
-          )
-      )
-  )
+  @Operation(summary = "환경 활동 모집글 생성", description = "모집글(JSON)과 이미지(파일, 0~3장)를 DB에 저장합니다.")
   @SecurityRequirement(name = "bearerAuth")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<IdResponse> createGreenTeamPost(
       @AuthenticationPrincipal CustomUserDetails userDetails,
-      @Valid @RequestPart("data") GreenTeamPostCreateRequest data,
-      @RequestPart(value = "images", required = false) List<MultipartFile> images
+      @Valid @RequestPart("data") GreenTeamPostCreateRequest request,
+      @RequestPart(value = "images", required = false) List<MultipartFile> imageFiles
   ) {
-    List<MultipartFile> safeImages = (images == null) ? List.of() : images;
-
     Long userId = userDetails.getId();
-
-    Long id = commandService.create(userId, data, safeImages);
+    Long id = commandService.create(userId, request, imageFiles);
 
     URI location = ServletUriComponentsBuilder.fromCurrentRequest()
         .path("/{id}")

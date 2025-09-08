@@ -1,26 +1,29 @@
 package kr.bi.greenmate.green_team_post.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Collections;
+import java.io.IOException;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import kr.bi.greenmate.common.service.ImageService;
+import kr.bi.greenmate.common.event.FileRollbackEvent;
+import kr.bi.greenmate.common.service.FileStorageService;
+import kr.bi.greenmate.common.util.UriPathExtractor;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPostImage;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
-import kr.bi.greenmate.green_team_post.repository.GreenTeamPostImageRepository;
-import kr.bi.greenmate.green_team_post.repository.GreenTeamPostRepository;
 import kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode;
+import kr.bi.greenmate.green_team_post.repository.GreenTeamPostRepository;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -30,32 +33,44 @@ public class GreenTeamPostCommandService {
   private static final int MAX_IMAGE_COUNT = 3;
 
   private final GreenTeamPostRepository postRepository;
-  private final GreenTeamPostImageRepository imageRepository;
   private final UserRepository userRepository;
-  private final ImageService imageService;
-
-  @Autowired
-  private ObjectMapper objectMapper;
+  private final FileStorageService fileStorageService;
+  private final ApplicationEventPublisher eventPublisher;
+  private final ObjectMapper objectMapper;
 
   /**
    * 환경 활동 모집글 생성
    *
-   * @param userId 작성자 ID
-   * @param req    게시글 생성 요청 DTO(JSON)
-   * @param images 첨부 이미지 파일들(0~3장)
+   * @param userId  작성자 ID
+   * @param request 게시글 생성 요청 DTO(JSON)
    * @return 생성된 게시글 ID
    */
   @Transactional
-  public Long create(Long userId, GreenTeamPostCreateRequest req, List<MultipartFile> images) {
+  public Long create(Long userId, GreenTeamPostCreateRequest request, List<MultipartFile> images) {
+
+    if (images != null && images.size() > MAX_IMAGE_COUNT) {
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_40005.status(),
+          GreenTeamPostErrorCode.GTP_40005.code()
+      );
+    }
+
     User writer = findWriter(userId);
-    GreenTeamPost post = createPost(writer, req);
+    GreenTeamPost post = createPost(writer, request);
 
     // 이미지가 없을 경우 조기종료
     if (images == null || images.isEmpty()) {
+      postRepository.save(post);
       return post.getId();
     }
-    // 이미지 업로드 및 GreenTeamPostImage 저장
-    saveImages(post, images);
+
+    for (MultipartFile imageFile : images) {
+      if (imageFile == null || imageFile.isEmpty()) {
+        continue;
+      }
+      post.getImages().add(createImageEntity(imageFile, post));
+    }
+    postRepository.save(post);
     return post.getId();
   }
 
@@ -67,10 +82,10 @@ public class GreenTeamPostCommandService {
         ));
   }
 
-  private GreenTeamPost createPost(User writer, GreenTeamPostCreateRequest req) {
+  private GreenTeamPost createPost(User writer, GreenTeamPostCreateRequest request) {
     String geojsonStr;
     try {
-      geojsonStr = objectMapper.writeValueAsString(req.getLocationGeojson());
+      geojsonStr = objectMapper.writeValueAsString(request.getLocationGeojson());
     } catch (JsonProcessingException e) {
       throw new ResponseStatusException(
           GreenTeamPostErrorCode.GTP_50001.status(),
@@ -79,49 +94,40 @@ public class GreenTeamPostCommandService {
       );
     }
 
-    GreenTeamPost post = GreenTeamPost.builder()
+    return GreenTeamPost.builder()
         .user(writer)
-        .title(req.getTitle())
-        .content(req.getContent())
-        .locationType(req.getLocationType())
-        .locationGeojson(geojsonStr) // 문자열로 저장
-        .maxParticipants(req.getMaxParticipants())
-        .eventDate(req.getEventDate())
-        .deadlineAt(req.getDeadlineAt())
+        .title(request.getTitle())
+        .content(request.getContent())
+        .locationType(request.getLocationType())
+        .locationGeojson(geojsonStr)
+        .maxParticipants(request.getMaxParticipants())
+        .eventDate(request.getEventDate())
+        .deadlineAt(request.getDeadlineAt())
         .build();
-
-    return postRepository.save(post);
   }
 
-  private void saveImages(GreenTeamPost post, List<MultipartFile> images) {
-    if (images == null || images.isEmpty()) {
-      return;
-    }
-
-    List<String> keys = Collections.emptyList();
+  private GreenTeamPostImage createImageEntity(MultipartFile imageFile, GreenTeamPost post) {
     try {
-      keys = imageService.uploadMany(IMAGE_DIR, images);
-      List<GreenTeamPostImage> postImages = keys.stream()
-          .map(key -> GreenTeamPostImage.builder()
-              .post(post)
-              .imageUrl(key)
-              .build())
-          .toList();
+      String uploadedUrl = fileStorageService.uploadFile(imageFile, IMAGE_DIR);
 
-      imageRepository.saveAll(postImages);
+      // 롤백 처리
+      eventPublisher.publishEvent(new FileRollbackEvent(this, uploadedUrl));
 
-    } catch (ResponseStatusException e) {
-      if (keys != null && !keys.isEmpty()) {
-        imageService.deleteMany(keys);
-      }
-      throw e; // ImageService에서 예외처리
-    } catch (Exception e) {
-      if (keys != null && !keys.isEmpty()) {
-        imageService.deleteMany(keys);
-      }
+      String uriPath = UriPathExtractor.getUriPath(uploadedUrl);
+      return GreenTeamPostImage.builder()
+          .post(post)
+          .imageUrl(uriPath)
+          .build();
+    } catch (IOException e) {
       throw new ResponseStatusException(
           GreenTeamPostErrorCode.IMG_50001.status(),
           GreenTeamPostErrorCode.IMG_50001.code(),
+          e
+      );
+    } catch (IllegalArgumentException e) {
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_40006.status(),
+          GreenTeamPostErrorCode.GTP_40006.code(),
           e
       );
     }

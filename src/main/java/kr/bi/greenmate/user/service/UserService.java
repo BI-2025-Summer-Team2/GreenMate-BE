@@ -1,7 +1,6 @@
 package kr.bi.greenmate.user.service;
 
 import kr.bi.greenmate.common.annotation.DistributedLock;
-import kr.bi.greenmate.common.domain.FilePath;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.term.domain.Term;
@@ -20,7 +19,6 @@ import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -37,6 +35,8 @@ import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
 @RequiredArgsConstructor
 @Service
 public class UserService {
+
+    private static final String IMAGE_DIR = "/user/profile";
 
     private final UserRepository userRepository;
     private final TermRepository termRepository;
@@ -136,7 +136,7 @@ public class UserService {
             return null;
         }
         try {
-            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, FilePath.USER_PROFILE.getPath());
+            String profileImageUrl = fileStorageService.uploadFile(profileImageFile, IMAGE_DIR);
             log.info("imageURI: {}", profileImageUrl);
             // 롤백될 경우 대비 이벤트 발행
             eventPublisher.publishEvent(new FileRollbackEvent(this, profileImageUrl));
