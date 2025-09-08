@@ -7,7 +7,6 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -43,7 +42,7 @@ public class CacheAop {
         }
         Object result = joinPoint.proceed();
         if (result != null) {
-            log.info("Create new cache: {}, TTL: {}", cacheName, ttl);
+            log.info("Create new cache key: {}, TTL: {}", key, ttl);
             redisTemplate.opsForValue().set(key, result, ttl, unit);
         }
         return result;
