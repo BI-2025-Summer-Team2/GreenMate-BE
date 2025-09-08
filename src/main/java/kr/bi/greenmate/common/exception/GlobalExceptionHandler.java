@@ -19,6 +19,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResponse(errorCode), errorCode.getHttpStatus());
     }
 
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGlobalException(Exception ex) {
         ErrorCode errorCode = GlobalErrorCode.from(ex);
         if (errorCode == INTERNAL_SERVER_ERROR) {
