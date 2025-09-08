@@ -24,7 +24,7 @@ public class CacheAop {
 
     @Around("@annotation(kr.bi.greenmate.common.annotation.CacheableWithTTL)")
     public Object cacheProcess(final ProceedingJoinPoint joinPoint) throws Throwable {
-        log.info("CacheAop Start");
+        log.debug("CacheAop Start");
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
         CacheableWithTTL cacheableWithTTL = method.getAnnotation(CacheableWithTTL.class);
@@ -42,7 +42,7 @@ public class CacheAop {
         }
         Object result = joinPoint.proceed();
         if (result != null) {
-            log.info("Create new cache key: {}, TTL: {}", key, ttl);
+            log.debug("Create new cache key: {}, TTL: {}", key, ttl);
             redisTemplate.opsForValue().set(key, result, ttl, unit);
         }
         return result;
