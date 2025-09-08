@@ -1,6 +1,7 @@
 package kr.bi.greenmate.common.aop;
 
 import kr.bi.greenmate.common.annotation.DistributedLock;
+import kr.bi.greenmate.common.exception.ApplicationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -16,6 +17,8 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import static kr.bi.greenmate.common.exception.CommonErrorCode.LOCK_ACQUISITION_FAILED;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.LOCK_INTERRUPTED;
 import static kr.bi.greenmate.common.util.CustomSpringELParser.getDynamicValue;
 
 @Aspect
@@ -49,22 +52,22 @@ public class DistributedLockAop {
         try {
             available = multiLock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
             if (!available) {
-                return false;
+                throw new ApplicationException(LOCK_ACQUISITION_FAILED);
             }
-            log.info("Success lock: {}", Arrays.toString(keys));
+            log.debug("Success lock: {}", Arrays.toString(keys));
             return aopForTransaction.proceed(joinPoint);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException("Lock Interrupted");
+            throw new ApplicationException(LOCK_INTERRUPTED);
         } finally {
             try {
                 multiLock.unlock();
                 log.info("Unlock: {}", Arrays.toString(keys));
             } catch (IllegalMonitorStateException e) {
                 if (!available) {
-                    log.info("Failed to get Lock: {} {}", method.getName(), keys);
+                    log.debug("Failed to get Lock: {} {}", method.getName(), keys);
                 } else {
-                    log.info("Already unlock: {} {}", method.getName(), keys);
+                    log.debug("Already unlock: {} {}", method.getName(), keys);
                 }
             }
         }
