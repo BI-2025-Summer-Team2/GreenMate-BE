@@ -62,7 +62,7 @@ public class DistributedLockAop {
         } finally {
             try {
                 multiLock.unlock();
-                log.info("Unlock: {}", Arrays.toString(keys));
+                log.debug("Unlock: {}", Arrays.toString(keys));
             } catch (IllegalMonitorStateException e) {
                 if (!available) {
                     log.debug("Failed to get Lock: {} {}", method.getName(), keys);
