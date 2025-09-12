@@ -1,9 +1,6 @@
 package kr.bi.greenmate.green_team_post.controller;
 
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.Encoding;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,6 +36,7 @@ import kr.bi.greenmate.auth.dto.CustomUserDetails;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostDetailResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostLikeResponse;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostCommandService;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostQueryService;
 
@@ -89,5 +88,25 @@ public class GreenTeamPostController {
       @PathVariable @NotNull @Min(1) Long id
   ) {
     return ResponseEntity.ok(queryService.getPostDetail(id));
+  }
+
+  @Operation(summary = "모집글 좋아요 생성", description = "해당 모집글에 좋아요를 생성합니다.")
+  @SecurityRequirement(name = "bearerAuth")
+  @PostMapping("/{postId}/likes")
+  public ResponseEntity<GreenTeamPostLikeResponse> addLike(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable("postId") Long postId
+  ) {
+    return ResponseEntity.ok(commandService.addLike(postId, userDetails.getId()));
+  }
+
+  @Operation(summary = "모집글 좋아요 삭제", description = "해당 모집글에 좋아요를 삭제합니다.")
+  @SecurityRequirement(name = "bearerAuth")
+  @DeleteMapping("/{postId}/likes")
+  public ResponseEntity<GreenTeamPostLikeResponse> removeLike(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable("postId") Long postId
+  ) {
+    return ResponseEntity.ok(commandService.removeLike(postId, userDetails.getId()));
   }
 }
