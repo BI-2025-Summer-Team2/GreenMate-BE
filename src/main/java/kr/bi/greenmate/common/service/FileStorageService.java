@@ -26,6 +26,8 @@ import static kr.bi.greenmate.common.exception.CommonErrorCode.UNSUPPORTED_IMAGE
 @RequiredArgsConstructor
 public class FileStorageService {
 
+    private static final long MAX_FILE_SIZE = 1_000_000L;
+
     private final ObjectStorageRepository objectStorageRepository;
     private final Tika tika;
 
@@ -34,6 +36,10 @@ public class FileStorageService {
             return null;
         }
 
+        // 파일 크기 검증
+        validateFileSize(file);
+
+        // 확장자/MIME 검증
         ImageFileExtension fileExtension = getFileExtension(file);
 
         String uniqueFileName = UUID.randomUUID() + "." + fileExtension.name().toLowerCase();
@@ -57,6 +63,12 @@ public class FileStorageService {
             objectStorageRepository.delete(fileUrl);
         } catch (Exception e){
             throw new ApplicationException(FILE_DELETE_FAILED);
+        }
+    }
+
+    private void validateFileSize(MultipartFile file) {
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("이미지 파일 크기는 1MB를 초과할 수 없습니다.");
         }
     }
 
