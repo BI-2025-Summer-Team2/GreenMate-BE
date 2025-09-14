@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import kr.bi.greenmate.auth.dto.CustomUserDetails;
+import kr.bi.greenmate.community.dto.CommunityLikeResponse;
 import kr.bi.greenmate.community.dto.CommunityPostDetailResponse;
 import kr.bi.greenmate.community.dto.CreateCommunityCommentRequest;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
@@ -51,7 +52,7 @@ public class CommunityController {
     @Operation(summary = "커뮤니티 댓글 생성", description = "게시글에 댓글(JSON)과 이미지(파일)을 DB에 저장합니다.")
     @PostMapping(value = "/posts/{postId}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> postComment(
-            @PathVariable @Positive(message = "게시글 ID는 양수여야 합니다.") Long postId,
+            @Parameter(description = "게시글 ID", required = true, example = "1") @PathVariable @NotNull @Positive Long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestPart("data") CreateCommunityCommentRequest request,
             @RequestPart(value = "image", required = false) @Parameter(description = "이미지 파일") MultipartFile imageFile
@@ -68,5 +69,14 @@ public class CommunityController {
             @Parameter(description = "게시글 ID", required = true, example = "1") @PathVariable @NotNull @Positive Long postId
     ) {
         return ResponseEntity.ok(communityService.getPostDetail(userDetails.getId(), postId));
+    }
+
+    @Operation(summary = "게시글 좋아요 토글", description = "게시글에 좋아요를 누르거나 취소합니다.")
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<CommunityLikeResponse> toggleLike(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Parameter(description = "게시글 ID", required = true, example = "1") @PathVariable @NotNull @Positive Long postId
+    ){
+        return ResponseEntity.ok(communityService.toggleLike(userDetails.getId(), postId));
     }
 }
