@@ -1,15 +1,20 @@
 package kr.bi.greenmate.community.service;
 
+import kr.bi.greenmate.common.annotation.DistributedLock;
 import kr.bi.greenmate.common.dto.CursorSliceResponse;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.exception.ApplicationException;
+import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.community.domain.CommunityComment;
 import kr.bi.greenmate.community.domain.CommunityImage;
 import kr.bi.greenmate.community.dto.CommunityCommentResponse;
+import kr.bi.greenmate.community.dto.CommunityPostDetailResponse;
+import kr.bi.greenmate.community.dto.CreateCommunityCommentRequest;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
 import kr.bi.greenmate.community.repository.CommunityCommentRepository;
+import kr.bi.greenmate.community.repository.CommunityLikeRepository;
 import kr.bi.greenmate.community.repository.CommunityRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,23 +27,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
 import static kr.bi.greenmate.community.exception.CommunityErrorCode.POST_NOT_FOUND;
+import static kr.bi.greenmate.user.exception.UserErrorCode.USER_NOT_FOUND;
 
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class CommunityService {
 
-    private static final String IMAGE_DIR = "/community";
+    private static final String COMMUNITY_IMAGE_DIR = "/community/post";
+    private static final String COMMUNITY_COMMENT_IMAGE_DIR = "/community/comment";
 
     private final FileStorageService fileStorageService;
+    private final ObjectStorageRepository objectStorageRepository;
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
+    private final CommunityLikeRepository communityLikeRepository;
     private final CommunityCommentRepository commentRepository;
 
     @Transactional
@@ -71,29 +79,66 @@ public class CommunityService {
         return CursorSliceResponse.of(responseSlice, size, CommunityCommentResponse::getCommentId);
     }
 
+    @DistributedLock(keys = {"#postId"}, prefix = "COMMUNITY")
+    public void createComment(Long postId, Long userId, CreateCommunityCommentRequest request, MultipartFile imageFile) {
+        Community post = communityRepository.findById(postId).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
+        post.increaseCommentCount();
+
+        String imageUri = null;
+        if (imageFile != null && !imageFile.isEmpty()) {
+            String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
+            eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
+            imageUri = getUriPath(imageUrl);
+        }
+
+        CommunityComment comment = createCommunityComment(userId, post, request.getContent(), imageUri);
+        commentRepository.save(comment);
+    }
+
+    public CommunityPostDetailResponse getPostDetail(Long userId, Long postId) {
+        Community communityPost = communityRepository.findWithDetailsById(postId)
+                .orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
+
+        List<String> imageUrls = getImageUrls(communityPost.getImages());
+
+        boolean isLiked = communityLikeRepository.existsByCommunity_IdAndUser_Id(postId, userId);
+
+        return CommunityPostDetailResponse.from(communityPost, imageUrls, isLiked);
+    }
+
     private Community createCommunity(Long userId, CreateCommunityPostRequest request) {
         return Community.builder()
-                .user(userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("등록되지 않은 회원입니다.")))
+                .user(userRepository.findById(userId).orElseThrow(() -> new ApplicationException(USER_NOT_FOUND)))
                 .title(request.getTitle())
                 .content(request.getContent())
                 .build();
     }
 
-    private CommunityImage createImageEntity(MultipartFile imageFile, Community post) {
-        try {
-            String imageUrl = fileStorageService.uploadFile(imageFile, IMAGE_DIR);
-            log.info("imageUrl: {}", imageUrl);
-            // 롤백 대비
-            eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
+    private CommunityComment createCommunityComment(Long userId, Community post, String content, String imageUri) {
+        return CommunityComment.builder()
+                .user(userRepository.findById(userId).orElseThrow(() -> new ApplicationException(USER_NOT_FOUND)))
+                .community(post)
+                .imageUrl(imageUri)
+                .content(content)
+                .build();
+    }
 
-            return CommunityImage.builder()
-                    .community(post)
-                    .imageUrl(getUriPath(imageUrl))
-                    .build();
-        } catch (IOException e) {
-            throw new RuntimeException("커뮤니티 게시글의 이미지 파일 업로드 중 오류가 발생했습니다.");
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("커뮤니티 게시글의 이미지 파일이 유효하지 않습니다.");
-        }
+    private CommunityImage createImageEntity(MultipartFile imageFile, Community post) {
+        String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_IMAGE_DIR);
+        log.debug("imageUrl: {}", imageUrl);
+        // 롤백 대비
+        eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
+
+        return CommunityImage.builder()
+                .community(post)
+                .imageUrl(getUriPath(imageUrl))
+                .build();
+
+    }
+
+    private List<String> getImageUrls(List<CommunityImage> images) {
+        return images.stream()
+                .map(image -> objectStorageRepository.getDownloadUrl(image.getImageUrl()))
+                .toList();
     }
 }
