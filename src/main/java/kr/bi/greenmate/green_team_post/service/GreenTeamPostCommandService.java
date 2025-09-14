@@ -86,7 +86,7 @@ public class GreenTeamPostCommandService {
    * @param postId 게시글 ID
    * @param userId 사용자 ID
    */
-  @DistributedLock(keys = {"post:#{#postId}"})
+  @DistributedLock(keys = {"post:like:#{#postId}"})
   @Transactional
   public GreenTeamPostLikeResponse addLike(Long postId, Long userId) {
     GreenTeamPost post = postRepository.findById(postId)
@@ -123,7 +123,7 @@ public class GreenTeamPostCommandService {
    * @param postId 게시글 ID
    * @param userId 사용자 ID
    */
-  @DistributedLock(keys = {"post:#{#postId}"})
+  @DistributedLock(keys = {"post:like:#{#postId}"})
   @Transactional
   public GreenTeamPostLikeResponse removeLike(Long postId, Long userId) {
     GreenTeamPost post = postRepository.findById(postId)
