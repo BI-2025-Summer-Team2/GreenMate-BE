@@ -137,7 +137,7 @@ public class GreenTeamPostCommandService {
         })
         .orElse(false);
 
-    return GreenTeamPostLikeResponse.of(removed ? false : false, post.getLikeCount());
+    return GreenTeamPostLikeResponse.of(false, post.getLikeCount());
   }
 
   private User findWriter(Long userId) {

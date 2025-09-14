@@ -51,7 +51,6 @@ public class GreenTeamPostController {
   private final GreenTeamPostQueryService queryService;
 
   @Operation(summary = "환경 활동 모집글 생성", description = "모집글(JSON)과 이미지(파일, 0~3장)를 DB에 저장합니다.")
-  @SecurityRequirement(name = "bearerAuth")
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<IdResponse> createGreenTeamPost(
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -91,7 +90,6 @@ public class GreenTeamPostController {
   }
 
   @Operation(summary = "모집글 좋아요 생성", description = "해당 모집글에 좋아요를 생성합니다.")
-  @SecurityRequirement(name = "bearerAuth")
   @PostMapping("/{postId}/likes")
   public ResponseEntity<GreenTeamPostLikeResponse> addLike(
       @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -101,7 +99,6 @@ public class GreenTeamPostController {
   }
 
   @Operation(summary = "모집글 좋아요 삭제", description = "해당 모집글에 좋아요를 삭제합니다.")
-  @SecurityRequirement(name = "bearerAuth")
   @DeleteMapping("/{postId}/likes")
   public ResponseEntity<GreenTeamPostLikeResponse> removeLike(
       @AuthenticationPrincipal CustomUserDetails userDetails,
