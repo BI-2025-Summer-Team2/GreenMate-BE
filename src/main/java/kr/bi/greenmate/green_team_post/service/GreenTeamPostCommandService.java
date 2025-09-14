@@ -14,13 +14,17 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import kr.bi.greenmate.common.annotation.DistributedLock;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.common.util.UriPathExtractor;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPostImage;
+import kr.bi.greenmate.green_team_post.domain.GreenTeamPostLike;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostLikeResponse;
 import kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode;
+import kr.bi.greenmate.green_team_post.repository.GreenTeamPostLikeRepository;
 import kr.bi.greenmate.green_team_post.repository.GreenTeamPostRepository;
 import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
@@ -33,6 +37,7 @@ public class GreenTeamPostCommandService {
   private static final int MAX_IMAGE_COUNT = 3;
 
   private final GreenTeamPostRepository postRepository;
+  private final GreenTeamPostLikeRepository likeRepository;
   private final UserRepository userRepository;
   private final FileStorageService fileStorageService;
   private final ApplicationEventPublisher eventPublisher;
@@ -72,6 +77,63 @@ public class GreenTeamPostCommandService {
     }
     postRepository.save(post);
     return post.getId();
+  }
+
+  /**
+   * 좋아요 추가
+   * - 좋아요가 없으면 생성·카운트 증가, 있으면 무시(멱등성 보장)
+   *
+   * @param postId 게시글 ID
+   * @param userId 사용자 ID
+   */
+  @DistributedLock(prefix = "post:like", keys = {"#postId"})
+  @Transactional
+  public GreenTeamPostLikeResponse addLike(Long postId, Long userId) {
+    GreenTeamPost post = findPostById(postId);
+    User user = findWriter(userId);
+
+    if (likeRepository.existsByPostIdAndUserId(postId, userId)) {
+      return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
+    }
+
+    likeRepository.save(
+        GreenTeamPostLike.builder()
+            .post(post)
+            .user(user)
+            .build()
+    );
+    post.increaseLikeCount();
+
+    return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
+  }
+
+  /**
+   * 좋아요 취소
+   * - 좋아요가 있으면 삭제·카운트 감소, 없으면 무시(멱등성 보장)
+   *
+   * @param postId 게시글 ID
+   * @param userId 사용자 ID
+   */
+  @DistributedLock(prefix = "post:like", keys = {"#postId"})
+  @Transactional
+  public GreenTeamPostLikeResponse removeLike(Long postId, Long userId) {
+    GreenTeamPost post = findPostById(postId);
+
+    likeRepository.findByPostIdAndUserId(postId, userId)
+        .ifPresent(like -> {
+          likeRepository.delete(like);
+          post.decreaseLikeCount();
+        });
+
+    return GreenTeamPostLikeResponse.of(false, post.getLikeCount());
+  }
+
+  private GreenTeamPost findPostById(Long postId) {
+    return postRepository.findById(postId)
+        .orElseThrow(() -> new ResponseStatusException(
+            GreenTeamPostErrorCode.GTP_40401.status(),
+            GreenTeamPostErrorCode.GTP_40401.code()
+        ));
   }
 
   private User findWriter(Long userId) {

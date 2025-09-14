@@ -41,16 +41,25 @@ public class DistributedLockAop {
         DistributedLock distributedLock = method.getAnnotation(DistributedLock.class);
 
         String[] keys = getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.keys());
+        String prefix = distributedLock.prefix();
+
         RLock[] locks = new RLock[keys.length];
         for (int i = 0; i < locks.length; i++) {
-            locks[i] = redissonClient.getLock(REDISSON_LOCK_PREFIX + keys[i]);
+            String lockKey = REDISSON_LOCK_PREFIX
+                + (prefix.isEmpty() ? "" : prefix + ":")
+                + keys[i];
+            locks[i] = redissonClient.getLock(lockKey);
         }
 
         RedissonMultiLock multiLock = new RedissonMultiLock(locks);
 
         boolean available = false;
         try {
-            available = multiLock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());
+            available = multiLock.tryLock(
+                distributedLock.waitTime(),
+                distributedLock.leaseTime(),
+                distributedLock.timeUnit()
+            );
             if (!available) {
                 throw new ApplicationException(LOCK_ACQUISITION_FAILED);
             }
