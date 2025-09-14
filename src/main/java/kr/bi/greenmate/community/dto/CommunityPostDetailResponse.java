@@ -3,6 +3,7 @@ package kr.bi.greenmate.community.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.user.domain.User;
+import kr.bi.greenmate.user.dto.UserInfo;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,20 +41,20 @@ public class CommunityPostDetailResponse {
     @Schema(description = "수정 일시", example = "2025-08-30 20:15")
     private LocalDateTime updatedAt;
 
-    @Schema(description = "작성자 id", example = "1")
-    private Long writerId;
-
-    @Schema(description = "작성자 닉네임", example = "그린Mate")
-    private String writerNickname;
-
-    @Schema(description = "작성자 프로필 사진 url")
-    private String writerProfileImage;
+    @Schema(description = "작성자 정보")
+    private UserInfo writer;
 
     @Schema(description = "사용자의 게시글 좋아요 여부", example = "false")
     private boolean isLiked;
 
     public static CommunityPostDetailResponse from(Community post, List<String> imageUrls, boolean isLiked) {
         User user = post.getUser();
+        UserInfo writerInfo = UserInfo.builder()
+                .id(user.getId())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImageUrl())
+                .build();
+
         return CommunityPostDetailResponse.builder()
                 .communityId(post.getId())
                 .title(post.getTitle())
@@ -63,9 +64,7 @@ public class CommunityPostDetailResponse {
                 .imageUrls(imageUrls)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
-                .writerId(user.getId())
-                .writerNickname(user.getNickname())
-                .writerProfileImage(user.getProfileImageUrl())
+                .writer(writerInfo)
                 .isLiked(isLiked)
                 .build();
     }
