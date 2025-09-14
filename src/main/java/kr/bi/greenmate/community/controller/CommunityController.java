@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import kr.bi.greenmate.auth.dto.CustomUserDetails;
 import kr.bi.greenmate.community.dto.CreateCommunityCommentRequest;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
@@ -14,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -36,21 +38,23 @@ public class CommunityController {
     public ResponseEntity<Void> posts(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestPart("data") CreateCommunityPostRequest request,
-            @RequestPart(value = "images", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
+            @RequestPart(value = "images", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles
+    ) {
         Long userId = userDetails.getId();
         communityService.createPost(userId, request, imageFiles);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "커뮤니티 댓글 생성", description = "게시글에 댓글(JSON)과 이미지(파일)을 DB에 저장합니다.")
-    @PostMapping(value = "/comment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/{postId}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> postComment(
+            @PathVariable @Positive(message = "게시글 ID는 양수여야 합니다.") Long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @Valid @RequestPart("data")CreateCommunityCommentRequest request,
+            @Valid @RequestPart("data") CreateCommunityCommentRequest request,
             @RequestPart(value = "image", required = false) @Parameter(description = "이미지 파일") MultipartFile imageFile
-            ){
+    ) {
         Long userId = userDetails.getId();
-        communityService.createComment(userId, request, imageFile);
+        communityService.createComment(postId, userId, request, imageFile);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

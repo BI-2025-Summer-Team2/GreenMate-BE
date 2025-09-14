@@ -55,8 +55,8 @@ public class CommunityService {
     }
 
     @DistributedLock(keys = {"'COMMUNITY:' + #request.postId"})
-    public void createComment(Long userId, CreateCommunityCommentRequest request, MultipartFile imageFile) {
-        Community post = communityRepository.findById(request.getPostId()).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
+    public void createComment(Long postId, Long userId, CreateCommunityCommentRequest request, MultipartFile imageFile) {
+        Community post = communityRepository.findById(postId).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
         post.increaseCommentCount();
 
         String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
