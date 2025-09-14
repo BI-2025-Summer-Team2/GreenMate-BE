@@ -60,15 +60,19 @@ public class CommunityService {
         communityRepository.save(communityPost);
     }
 
-    @DistributedLock(keys = {"'COMMUNITY:' + #request.postId"})
+    @DistributedLock(keys = {"#postId"}, prefix = "COMMUNITY")
     public void createComment(Long postId, Long userId, CreateCommunityCommentRequest request, MultipartFile imageFile) {
         Community post = communityRepository.findById(postId).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
         post.increaseCommentCount();
 
-        String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
-        eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
+        String imageUri = null;
+        if(imageFile!= null && !imageFile.isEmpty()) {
+            String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
+            eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
+            imageUri = getUriPath(imageUrl);
+        }
 
-        CommunityComment comment = createCommunityComment(userId, post, request.getContent(), getUriPath(imageUrl));
+        CommunityComment comment = createCommunityComment(userId, post, request.getContent(), imageUri);
         commentRepository.save(comment);
     }
 
