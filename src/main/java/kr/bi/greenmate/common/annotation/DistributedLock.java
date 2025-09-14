@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DistributedLock {
 
+    String prefix() default "";
+
     String[] keys();
 
     TimeUnit timeUnit() default TimeUnit.SECONDS;
