@@ -34,8 +34,8 @@ public class CommunityCommentResponse {
 
     private static final String DELETED_COMMUNITY_COMMENT_CONTENT = "삭제된 댓글입니다.";
 
-    public static CommunityCommentResponse from(CommunityComment comment){
-        if(comment.getDeletedAt() == null){
+    public static CommunityCommentResponse from(CommunityComment comment) {
+        if (comment.getDeletedAt() != null) {
             return CommunityCommentResponse.builder()
                     .content(DELETED_COMMUNITY_COMMENT_CONTENT)
                     .writer(UserInfo.deleted())
