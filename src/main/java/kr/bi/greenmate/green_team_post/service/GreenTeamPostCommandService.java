@@ -118,12 +118,6 @@ public class GreenTeamPostCommandService {
           .post(post)
           .imageUrl(uriPath)
           .build();
-    } catch (IOException e) {
-      throw new ResponseStatusException(
-          GreenTeamPostErrorCode.IMG_50001.status(),
-          GreenTeamPostErrorCode.IMG_50001.code(),
-          e
-      );
     } catch (IllegalArgumentException e) {
       throw new ResponseStatusException(
           GreenTeamPostErrorCode.GTP_40006.status(),
