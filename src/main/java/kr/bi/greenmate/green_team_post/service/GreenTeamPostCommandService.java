@@ -162,7 +162,7 @@ public class GreenTeamPostCommandService {
     User user = findWriter(userId);
 
     if (likeRepository.existsByPostIdAndUserId(postId, userId)) {
-      return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
+      return GreenTeamPostLikeResponse.from(true, post.getLikeCount());
     }
 
     likeRepository.save(
@@ -173,7 +173,7 @@ public class GreenTeamPostCommandService {
     );
     post.increaseLikeCount();
 
-    return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
+    return GreenTeamPostLikeResponse.from(true, post.getLikeCount());
   }
 
   /**
@@ -194,7 +194,7 @@ public class GreenTeamPostCommandService {
           post.decreaseLikeCount();
         });
 
-    return GreenTeamPostLikeResponse.of(false, post.getLikeCount());
+    return GreenTeamPostLikeResponse.from(false, post.getLikeCount());
   }
 
   private GreenTeamPost findPostById(Long postId) {
