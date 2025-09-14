@@ -89,17 +89,8 @@ public class GreenTeamPostCommandService {
   @DistributedLock(prefix = "post:like", keys = {"#postId"})
   @Transactional
   public GreenTeamPostLikeResponse addLike(Long postId, Long userId) {
-    GreenTeamPost post = postRepository.findById(postId)
-        .orElseThrow(() -> new ResponseStatusException(
-            GreenTeamPostErrorCode.GTP_40401.status(),
-            GreenTeamPostErrorCode.GTP_40401.code()
-        ));
-
-    User user = userRepository.findById(userId)
-        .orElseThrow(() -> new ResponseStatusException(
-            GreenTeamPostErrorCode.AUTH_40401.status(),
-            GreenTeamPostErrorCode.AUTH_40401.code()
-        ));
+    GreenTeamPost post = findPostById(postId);
+    User user = findWriter(userId);
 
     if (likeRepository.existsByPostIdAndUserId(postId, userId)) {
       return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
@@ -126,18 +117,23 @@ public class GreenTeamPostCommandService {
   @DistributedLock(prefix = "post:like", keys = {"#postId"})
   @Transactional
   public GreenTeamPostLikeResponse removeLike(Long postId, Long userId) {
-    GreenTeamPost post = postRepository.findById(postId)
+    GreenTeamPost post = findPostById(postId);
+
+    likeRepository.findByPostIdAndUserId(postId, userId)
+        .ifPresent(like -> {
+          likeRepository.delete(like);
+          post.decreaseLikeCount();
+        });
+
+    return GreenTeamPostLikeResponse.of(false, post.getLikeCount());
+  }
+
+  private GreenTeamPost findPostById(Long postId) {
+    return postRepository.findById(postId)
         .orElseThrow(() -> new ResponseStatusException(
             GreenTeamPostErrorCode.GTP_40401.status(),
             GreenTeamPostErrorCode.GTP_40401.code()
         ));
-
-    likeRepository.findByPostIdAndUserId(postId, userId).ifPresent(like -> {
-      likeRepository.delete(like);
-      post.decreaseLikeCount();
-    });
-
-    return GreenTeamPostLikeResponse.of(false, post.getLikeCount());
   }
 
   private User findWriter(Long userId) {
