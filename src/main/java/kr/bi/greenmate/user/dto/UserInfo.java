@@ -1,6 +1,7 @@
 package kr.bi.greenmate.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import kr.bi.greenmate.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,9 +20,17 @@ public class UserInfo {
 
     private static final String DELETED_USER_NICKNAME = "알 수 없음";
 
-    public static UserInfo deleted(){
+    public static UserInfo deleted() {
         return UserInfo.builder()
                 .nickname(DELETED_USER_NICKNAME)
+                .build();
+    }
+
+    public static UserInfo from(User user) {
+        return UserInfo.builder()
+                .id(user.getId())
+                .nickname(user.getNickname())
+                .profileImage(user.getProfileImageUrl())
                 .build();
     }
 }

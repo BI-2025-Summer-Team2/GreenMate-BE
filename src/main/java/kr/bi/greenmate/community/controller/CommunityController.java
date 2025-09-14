@@ -48,9 +48,8 @@ public class CommunityController {
     }
 
     @Operation(summary = "커뮤니티 댓글 조회", description = "커서 기반 페이지네이션으로 게시글에 작성된 댓글들을 조회합니다.")
-    @GetMapping("/{postId}/comments")
+    @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<CursorSliceResponse<CommunityCommentResponse>> getComments(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long postId,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "20") @Positive int size

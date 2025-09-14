@@ -49,11 +49,7 @@ public class CommunityCommentResponse {
                 .imageUrl(comment.getImageUrl())
                 .createdAt(comment.getCreatedAt())
                 .updatedAt(comment.getUpdatedAt())
-                .writer(UserInfo.builder()
-                        .id(writer.getId())
-                        .nickname(writer.getNickname())
-                        .profileImage(writer.getProfileImageUrl())
-                        .build())
+                .writer(UserInfo.from(writer))
                 .build();
     }
 }

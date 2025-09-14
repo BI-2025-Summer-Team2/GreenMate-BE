@@ -2,6 +2,7 @@ package kr.bi.greenmate.community.service;
 
 import kr.bi.greenmate.common.dto.CursorSliceResponse;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
+import kr.bi.greenmate.common.exception.ApplicationException;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.community.domain.CommunityComment;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
+import static kr.bi.greenmate.community.exception.CommunityErrorCode.POST_NOT_FOUND;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -55,6 +57,9 @@ public class CommunityService {
     }
 
     public CursorSliceResponse<CommunityCommentResponse> getCommentList(Long postId, Long cursor, int size) {
+        if (!communityRepository.existsById(postId)) {
+            throw new ApplicationException(POST_NOT_FOUND);
+        }
         PageRequest pageRequest = PageRequest.of(0, size, Sort.by("id").descending());
 
         Slice<CommunityComment> commentSlice = (cursor == null)
