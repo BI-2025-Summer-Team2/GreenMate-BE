@@ -79,4 +79,19 @@ public class GreenTeamPost extends BaseTimeEntity {
   @Builder.Default
   @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
   private List<GreenTeamPostImage> images = new ArrayList<>();
+
+  public void increaseLikeCount() {
+    if (this.likeCount == null) {
+      this.likeCount = 0;
+    }
+    this.likeCount++;
+  }
+
+  public void decreaseLikeCount() {
+    if (this.likeCount == null || this.likeCount <= 0) {
+      this.likeCount = 0;
+    } else {
+      this.likeCount--;
+    }
+  }
 }
