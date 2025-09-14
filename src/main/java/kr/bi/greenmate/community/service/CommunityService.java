@@ -62,7 +62,7 @@ public class CommunityService {
         String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
         eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
 
-        CommunityComment comment = createCommunityComment(userId, post, post.getContent(), getUriPath(imageUrl));
+        CommunityComment comment = createCommunityComment(userId, post, request.getContent(), getUriPath(imageUrl));
         commentRepository.save(comment);
     }
 
