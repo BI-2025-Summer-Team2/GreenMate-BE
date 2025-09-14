@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import kr.bi.greenmate.common.annotation.DistributedLock;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.common.util.UriPathExtractor;
@@ -85,6 +86,7 @@ public class GreenTeamPostCommandService {
    * @param postId 게시글 ID
    * @param userId 사용자 ID
    */
+  @DistributedLock(keys = {"post:#{#postId}"})
   @Transactional
   public GreenTeamPostLikeResponse addLike(Long postId, Long userId) {
     GreenTeamPost post = postRepository.findById(postId)
@@ -103,12 +105,12 @@ public class GreenTeamPostCommandService {
       return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
     }
 
-    GreenTeamPostLike like = GreenTeamPostLike.builder()
-        .post(post)
-        .user(user)
-        .build();
-
-    likeRepository.save(like);
+    likeRepository.save(
+        GreenTeamPostLike.builder()
+            .post(post)
+            .user(user)
+            .build()
+    );
     post.increaseLikeCount();
 
     return GreenTeamPostLikeResponse.of(true, post.getLikeCount());
@@ -121,6 +123,7 @@ public class GreenTeamPostCommandService {
    * @param postId 게시글 ID
    * @param userId 사용자 ID
    */
+  @DistributedLock(keys = {"post:#{#postId}"})
   @Transactional
   public GreenTeamPostLikeResponse removeLike(Long postId, Long userId) {
     GreenTeamPost post = postRepository.findById(postId)
@@ -129,13 +132,10 @@ public class GreenTeamPostCommandService {
             GreenTeamPostErrorCode.GTP_40401.code()
         ));
 
-    boolean removed = likeRepository.findByPostIdAndUserId(postId, userId)
-        .map(like -> {
-          likeRepository.delete(like);
-          post.decreaseLikeCount();
-          return true;
-        })
-        .orElse(false);
+    likeRepository.findByPostIdAndUserId(postId, userId).ifPresent(like -> {
+      likeRepository.delete(like);
+      post.decreaseLikeCount();
+    });
 
     return GreenTeamPostLikeResponse.of(false, post.getLikeCount());
   }
