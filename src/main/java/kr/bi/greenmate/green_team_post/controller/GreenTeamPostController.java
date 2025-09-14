@@ -3,7 +3,6 @@ package kr.bi.greenmate.green_team_post.controller;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -36,6 +35,7 @@ import kr.bi.greenmate.auth.dto.CustomUserDetails;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostDetailResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostSummaryResponse;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostParticipantResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostLikeResponse;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostCommandService;
 import kr.bi.greenmate.green_team_post.service.GreenTeamPostQueryService;
@@ -87,6 +87,24 @@ public class GreenTeamPostController {
       @PathVariable @NotNull @Min(1) Long id
   ) {
     return ResponseEntity.ok(queryService.getPostDetail(id));
+  }
+
+  @Operation(summary = "환경 활동 모집글 참가 신청", description = "해당 모집글에 참가를 신청합니다.")
+  @PostMapping("/{postId}/participants")
+  public ResponseEntity<GreenTeamPostParticipantResponse> joinPost(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable("postId") Long postId
+  ) {
+    return ResponseEntity.ok(commandService.applyParticipation(postId, userDetails.getId()));
+  }
+
+  @Operation(summary = "환경 활동 모집글 참가 취소", description = "해당 모집글 참가를 취소합니다.")
+  @DeleteMapping("/{postId}/participants")
+  public ResponseEntity<GreenTeamPostParticipantResponse> leavePost(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @PathVariable("postId") Long postId
+  ) {
+    return ResponseEntity.ok(commandService.cancelParticipation(postId, userDetails.getId()));
   }
 
   @Operation(summary = "모집글 좋아요 생성", description = "해당 모집글에 좋아요를 생성합니다.")
