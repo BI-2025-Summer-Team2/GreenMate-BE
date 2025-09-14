@@ -53,10 +53,7 @@ public class CommunityPostDetailResponse {
     private boolean isLiked;
 
     public static CommunityPostDetailResponse from(Community post, List<String> imageUrls, boolean isLiked) {
-        log.info("starting make CommunityPostDetailResponse");
-        log.info("user id: {}, nickname: {}", post.getUser().getId(), post.getUser().getNickname());
         User user = post.getUser();
-        log.info("user id: {}, nickname: {}", user.getId(), user.getNickname());
         return CommunityPostDetailResponse.builder()
                 .communityId(post.getId())
                 .title(post.getTitle())
