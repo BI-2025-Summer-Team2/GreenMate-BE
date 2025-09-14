@@ -3,18 +3,20 @@ package kr.bi.greenmate.community.service;
 import kr.bi.greenmate.common.annotation.DistributedLock;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.exception.ApplicationException;
-import kr.bi.greenmate.common.exception.ApplicationException;
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.community.domain.CommunityComment;
 import kr.bi.greenmate.community.domain.CommunityImage;
+import kr.bi.greenmate.community.domain.CommunityLike;
+import kr.bi.greenmate.community.dto.CommunityLikeResponse;
 import kr.bi.greenmate.community.dto.CommunityPostDetailResponse;
 import kr.bi.greenmate.community.dto.CreateCommunityCommentRequest;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
-import kr.bi.greenmate.community.repository.CommunityLikeRepository;
 import kr.bi.greenmate.community.repository.CommunityCommentRepository;
+import kr.bi.greenmate.community.repository.CommunityLikeRepository;
 import kr.bi.greenmate.community.repository.CommunityRepository;
+import kr.bi.greenmate.user.domain.User;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 import static kr.bi.greenmate.common.util.UriPathExtractor.getUriPath;
 import static kr.bi.greenmate.community.exception.CommunityErrorCode.POST_NOT_FOUND;
@@ -66,7 +69,7 @@ public class CommunityService {
         post.increaseCommentCount();
 
         String imageUri = null;
-        if(imageFile!= null && !imageFile.isEmpty()) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
             eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
             imageUri = getUriPath(imageUrl);
@@ -85,6 +88,26 @@ public class CommunityService {
         boolean isLiked = communityLikeRepository.existsByCommunity_IdAndUser_Id(postId, userId);
 
         return CommunityPostDetailResponse.from(communityPost, imageUrls, isLiked);
+    }
+
+    @DistributedLock(keys = {"#postId"}, prefix = "COMMUNITY")
+    public CommunityLikeResponse toggleLike(Long userId, Long postId) {
+        Community post = communityRepository.findById(postId).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
+
+        Optional<CommunityLike> likeOptional = communityLikeRepository.findByCommunity_IdAndUser_Id(postId, userId);
+        if (likeOptional.isPresent()) {
+            communityLikeRepository.delete(likeOptional.get());
+            post.decreaseLikeCount();
+        } else {
+            User user = userRepository.findById(userId).orElseThrow(() -> new ApplicationException(USER_NOT_FOUND));
+            addLike(post, user);
+            post.increaseLikeCount();
+        }
+
+        return CommunityLikeResponse.builder()
+                .likeCount(post.getLikeCount())
+                .isLiked(likeOptional.isEmpty())
+                .build();
     }
 
     private Community createCommunity(Long userId, CreateCommunityPostRequest request) {
@@ -120,9 +143,17 @@ public class CommunityService {
         }
     }
 
-    private List<String> getImageUrls(List<CommunityImage> images){
+    private List<String> getImageUrls(List<CommunityImage> images) {
         return images.stream()
                 .map(image -> objectStorageRepository.getDownloadUrl(image.getImageUrl()))
                 .toList();
+    }
+
+    private void addLike(Community community, User user) {
+        CommunityLike newLike = CommunityLike.builder()
+                .community(community)
+                .user(user)
+                .build();
+        communityLikeRepository.save(newLike);
     }
 }
