@@ -46,7 +46,7 @@ public class CommunityController {
     }
 
     @Operation(summary = "커뮤니티 댓글 생성", description = "게시글에 댓글(JSON)과 이미지(파일)을 DB에 저장합니다.")
-    @PostMapping(value = "/{postId}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/posts/{postId}/comments", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> postComment(
             @PathVariable @Positive(message = "게시글 ID는 양수여야 합니다.") Long postId,
             @AuthenticationPrincipal CustomUserDetails userDetails,
