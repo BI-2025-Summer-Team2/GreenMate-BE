@@ -49,11 +49,6 @@ public class CommunityPostDetailResponse {
 
     public static CommunityPostDetailResponse from(Community post, List<String> imageUrls, boolean isLiked) {
         User user = post.getUser();
-        UserInfo writerInfo = UserInfo.builder()
-                .id(user.getId())
-                .nickname(user.getNickname())
-                .profileImage(user.getProfileImageUrl())
-                .build();
 
         return CommunityPostDetailResponse.builder()
                 .communityId(post.getId())
@@ -64,7 +59,7 @@ public class CommunityPostDetailResponse {
                 .imageUrls(imageUrls)
                 .createdAt(post.getCreatedAt())
                 .updatedAt(post.getUpdatedAt())
-                .writer(writerInfo)
+                .writer(UserInfo.from(user))
                 .isLiked(isLiked)
                 .build();
     }
