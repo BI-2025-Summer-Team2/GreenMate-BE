@@ -1,15 +1,22 @@
 package kr.bi.greenmate.community.service;
 
+import kr.bi.greenmate.common.dto.CursorSliceResponse;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
+import kr.bi.greenmate.community.domain.CommunityComment;
 import kr.bi.greenmate.community.domain.CommunityImage;
+import kr.bi.greenmate.community.dto.CommunityCommentResponse;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
+import kr.bi.greenmate.community.repository.CommunityCommentRepository;
 import kr.bi.greenmate.community.repository.CommunityRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,6 +37,7 @@ public class CommunityService {
     private final ApplicationEventPublisher eventPublisher;
     private final UserRepository userRepository;
     private final CommunityRepository communityRepository;
+    private final CommunityCommentRepository commentRepository;
 
     @Transactional
     public void createPost(Long userId, CreateCommunityPostRequest request, List<MultipartFile> imageFiles) {
@@ -44,6 +52,18 @@ public class CommunityService {
             }
         }
         communityRepository.save(communityPost);
+    }
+
+    public CursorSliceResponse<CommunityCommentResponse> getCommentList(Long postId, Long cursor, int size) {
+        PageRequest pageRequest = PageRequest.of(0, size, Sort.by("id").descending());
+
+        Slice<CommunityComment> commentSlice = (cursor == null)
+                ? commentRepository.findAllByCommunity_Id(postId, pageRequest)
+                : commentRepository.findAllByCommunity_IdAndIdLessThan(postId, cursor, pageRequest);
+
+        Slice<CommunityCommentResponse> responseSlice = commentSlice.map(CommunityCommentResponse::from);
+
+        return CursorSliceResponse.of(responseSlice, size, CommunityCommentResponse::getCommentId);
     }
 
     private Community createCommunity(Long userId, CreateCommunityPostRequest request) {
