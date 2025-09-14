@@ -1,6 +1,7 @@
 package kr.bi.greenmate.common.service;
 
 import kr.bi.greenmate.common.domain.ImageFileExtension;
+import kr.bi.greenmate.common.exception.ApplicationException;
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.tika.Tika;
@@ -11,6 +12,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
+
+import static kr.bi.greenmate.common.exception.CommonErrorCode.FILE_DELETE_FAILED;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.FILE_READ_FAILED;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.FILE_UPLOAD_FAILED;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.INVALID_FILE_NAME;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.MIME_TYPE_MISMATCH;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.MISSING_FILE_EXTENSION;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.UNREADABLE_FILE_MIME_TYPE;
+import static kr.bi.greenmate.common.exception.CommonErrorCode.UNSUPPORTED_IMAGE_FILE_EXTENSION;
 
 @Service
 @RequiredArgsConstructor
@@ -34,17 +44,26 @@ public class FileStorageService {
 
         String uniqueFileName = UUID.randomUUID() + "." + fileExtension.name().toLowerCase();
 
-        String uploadedFileKey = objectStorageRepository.upload(
-            subPath,
-            uniqueFileName,
-            file.getInputStream()
-        );
-
-        return objectStorageRepository.getDownloadUrl(uploadedFileKey);
+        try {
+            String uploadedFileKey = objectStorageRepository.upload(
+                    subPath,
+                    uniqueFileName,
+                    file.getInputStream()
+            );
+            return objectStorageRepository.getDownloadUrl(uploadedFileKey);
+        } catch (IOException e){
+            throw new ApplicationException(FILE_READ_FAILED);
+        } catch (Exception e){
+            throw new ApplicationException(FILE_UPLOAD_FAILED);
+        }
     }
 
     public void deleteFile(String fileUrl) {
-        objectStorageRepository.delete(fileUrl);
+        try {
+            objectStorageRepository.delete(fileUrl);
+        } catch (Exception e){
+            throw new ApplicationException(FILE_DELETE_FAILED);
+        }
     }
 
     private void validateFileSize(MultipartFile file) {
@@ -56,12 +75,12 @@ public class FileStorageService {
     private ImageFileExtension getFileExtension(MultipartFile file) throws IOException {
         String originalFileName = file.getOriginalFilename();
         if (originalFileName == null || originalFileName.isBlank()) {
-            throw new IllegalArgumentException("원본 파일명이 유효하지 않습니다.");
+            throw new ApplicationException(INVALID_FILE_NAME);
         }
 
         String fileExtensionStr = StringUtils.getFilenameExtension(originalFileName);
         if (fileExtensionStr == null) {
-            throw new IllegalArgumentException("파일 확장자가 존재하지 않습니다.");
+            throw new ApplicationException(MISSING_FILE_EXTENSION);
         }
 
         ImageFileExtension fileExtension = getImageFileExtension(fileExtensionStr.toUpperCase());
@@ -74,21 +93,18 @@ public class FileStorageService {
         try (InputStream inputStream = file.getInputStream()) {
             String detectedMimeType = tika.detect(inputStream);
             if (detectedMimeType == null) {
-                throw new IllegalArgumentException("파일의 MimeType을 확인할 수 없습니다.");
+                throw new ApplicationException(UNREADABLE_FILE_MIME_TYPE);
             }
             if (!extension.getMimeType().equals(detectedMimeType.toLowerCase())) {
-                throw new IllegalArgumentException(
-                    "파일의 MimeType이 확장자와 일치하지 않습니다. " + extension.getMimeType() +
-                        "이어야 합니다. : " + detectedMimeType
-                );
+                throw new ApplicationException(MIME_TYPE_MISMATCH);
             }
         } catch (IOException e) {
-            throw new IOException("파일 읽기 실패", e);
+            throw new ApplicationException(FILE_READ_FAILED);
         }
     }
 
     private ImageFileExtension getImageFileExtension(String fileExtensionStr) {
         return ImageFileExtension.fromExtension(fileExtensionStr)
-            .orElseThrow(() -> new IllegalArgumentException("이미지 파일에 허용되지 않는 확장자입니다: " + fileExtensionStr));
+                .orElseThrow(() -> new ApplicationException(UNSUPPORTED_IMAGE_FILE_EXTENSION));
     }
 }
