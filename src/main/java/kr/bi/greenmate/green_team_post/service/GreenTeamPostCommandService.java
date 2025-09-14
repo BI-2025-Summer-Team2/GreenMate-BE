@@ -65,7 +65,7 @@ public class GreenTeamPostCommandService {
       );
     }
 
-    User writer = findWriter(userId);
+    User writer = findUserById(userId);
     GreenTeamPost post = createPost(writer, request);
 
     // 이미지가 없을 경우 조기종료
@@ -96,7 +96,7 @@ public class GreenTeamPostCommandService {
   @Transactional
   public GreenTeamPostParticipantResponse applyParticipation(Long postId, Long userId) {
     GreenTeamPost post = findPostById(postId);
-    User user = findWriter(userId);
+    User user = findUserById(userId);
 
     if (participantRepository.existsByPostIdAndUserId(postId, userId)) {
       return GreenTeamPostParticipantResponse.from(true, post.getParticipantCount());
@@ -159,7 +159,7 @@ public class GreenTeamPostCommandService {
   @Transactional
   public GreenTeamPostLikeResponse addLike(Long postId, Long userId) {
     GreenTeamPost post = findPostById(postId);
-    User user = findWriter(userId);
+    User user = findUserById(userId);
 
     if (likeRepository.existsByPostIdAndUserId(postId, userId)) {
       return GreenTeamPostLikeResponse.from(true, post.getLikeCount());
@@ -205,7 +205,7 @@ public class GreenTeamPostCommandService {
         ));
   }
 
-  private User findWriter(Long userId) {
+  private User findUserById(Long userId) {
     return userRepository.findById(userId)
         .orElseThrow(() -> new ResponseStatusException(
             GreenTeamPostErrorCode.AUTH_40401.status(),
