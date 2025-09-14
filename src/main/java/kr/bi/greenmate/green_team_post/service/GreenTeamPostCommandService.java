@@ -1,6 +1,7 @@
 package kr.bi.greenmate.green_team_post.service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,10 +21,13 @@ import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.common.util.UriPathExtractor;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPost;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPostImage;
+import kr.bi.greenmate.green_team_post.domain.GreenTeamParticipant;
 import kr.bi.greenmate.green_team_post.domain.GreenTeamPostLike;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostCreateRequest;
+import kr.bi.greenmate.green_team_post.dto.GreenTeamPostParticipantResponse;
 import kr.bi.greenmate.green_team_post.dto.GreenTeamPostLikeResponse;
 import kr.bi.greenmate.green_team_post.exception.GreenTeamPostErrorCode;
+import kr.bi.greenmate.green_team_post.repository.GreenTeamParticipantRepository;
 import kr.bi.greenmate.green_team_post.repository.GreenTeamPostLikeRepository;
 import kr.bi.greenmate.green_team_post.repository.GreenTeamPostRepository;
 import kr.bi.greenmate.user.domain.User;
@@ -37,6 +41,7 @@ public class GreenTeamPostCommandService {
   private static final int MAX_IMAGE_COUNT = 3;
 
   private final GreenTeamPostRepository postRepository;
+  private final GreenTeamParticipantRepository participantRepository;
   private final GreenTeamPostLikeRepository likeRepository;
   private final UserRepository userRepository;
   private final FileStorageService fileStorageService;
@@ -77,6 +82,70 @@ public class GreenTeamPostCommandService {
     }
     postRepository.save(post);
     return post.getId();
+  }
+
+  /**
+   * 참가 신청
+   * - 참가가 없으면 생성·카운트 증가, 있으면 무시(멱등성 보장)
+   * - 모집 정원 및 마감일 체크
+   *
+   * @param postId 게시글 ID
+   * @param userId 사용자 ID
+   */
+  @DistributedLock(prefix = "post:participant", keys = {"#postId"})
+  @Transactional
+  public GreenTeamPostParticipantResponse applyParticipation(Long postId, Long userId) {
+    GreenTeamPost post = findPostById(postId);
+    User user = findWriter(userId);
+
+    if (participantRepository.existsByPostIdAndUserId(postId, userId)) {
+      return GreenTeamPostParticipantResponse.from(true, post.getParticipantCount());
+    }
+
+    if (LocalDateTime.now().isAfter(post.getDeadlineAt())) {
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_40007.status(),
+          GreenTeamPostErrorCode.GTP_40007.code()
+      );
+    }
+
+    if (post.getParticipantCount() >= post.getMaxParticipants()) {
+      throw new ResponseStatusException(
+          GreenTeamPostErrorCode.GTP_40008.status(),
+          GreenTeamPostErrorCode.GTP_40008.code()
+      );
+    }
+
+    // 참가자 저장
+    participantRepository.save(
+        GreenTeamParticipant.builder()
+            .post(post)
+            .user(user)
+            .build()
+    );
+    post.increaseParticipantCount();
+
+    return GreenTeamPostParticipantResponse.from(true, post.getParticipantCount());
+  }
+
+  /**
+   * 참가 취소
+   * - 참가가 있으면 삭제·카운트 감소, 없으면 무시(멱등성 보장)
+   *
+   * @param postId 게시글 ID
+   * @param userId 사용자 ID
+   */
+  @DistributedLock(prefix = "post:participant", keys = {"#postId"})
+  @Transactional
+  public GreenTeamPostParticipantResponse cancelParticipation(Long postId, Long userId) {
+    GreenTeamPost post = findPostById(postId);
+
+    participantRepository.findByPostIdAndUserId(postId, userId).ifPresent(participant -> {
+      participantRepository.delete(participant);
+      post.decreaseParticipantCount();
+    });
+
+    return GreenTeamPostParticipantResponse.from(false, post.getParticipantCount());
   }
 
   /**
