@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import kr.bi.greenmate.auth.dto.CustomUserDetails;
+import kr.bi.greenmate.community.dto.CreateCommunityCommentRequest;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
 import kr.bi.greenmate.community.service.CommunityService;
 import lombok.RequiredArgsConstructor;
@@ -28,16 +29,28 @@ import java.util.List;
 @Tag(name = "커뮤니티", description = "커뮤니티 글 관련 API")
 public class CommunityController {
 
-  private final CommunityService communityService;
+    private final CommunityService communityService;
 
-  @Operation(summary = "커뮤니티 글 생성", description = "작성된 글(JSON)과 이미지(파일)를 DB에 저장합니다.")
-  @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<Void> posts(
-      @AuthenticationPrincipal CustomUserDetails userDetails,
-      @Valid @RequestPart("data") CreateCommunityPostRequest request,
-      @RequestPart(value = "images", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
-    Long userId = userDetails.getId();
-    communityService.createPost(userId, request, imageFiles);
-    return ResponseEntity.status(HttpStatus.CREATED).build();
-  }
+    @Operation(summary = "커뮤니티 글 생성", description = "작성된 글(JSON)과 이미지(파일)를 DB에 저장합니다.")
+    @PostMapping(value = "/posts", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> posts(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestPart("data") CreateCommunityPostRequest request,
+            @RequestPart(value = "images", required = false) @Parameter(description = "이미지 파일") List<MultipartFile> imageFiles) {
+        Long userId = userDetails.getId();
+        communityService.createPost(userId, request, imageFiles);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
+    @Operation(summary = "커뮤니티 댓글 생성", description = "게시글에 댓글(JSON)과 이미지(파일)을 DB에 저장합니다.")
+    @PostMapping(value = "/comment", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> postComment(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestPart("data")CreateCommunityCommentRequest request,
+            @RequestPart(value = "image", required = false) @Parameter(description = "이미지 파일") MultipartFile imageFile
+            ){
+        Long userId = userDetails.getId();
+        communityService.createComment(userId, request, imageFile);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }
