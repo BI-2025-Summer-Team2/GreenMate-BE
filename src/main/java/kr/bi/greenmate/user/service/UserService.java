@@ -143,8 +143,6 @@ public class UserService {
 
             return getUriPath(profileImageUrl);
 
-        } catch (IOException e) {
-            throw new RuntimeException("프로필 이미지 파일 업로드 중 오류가 발생했습니다.", e);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException("프로필 이미지 파일이 유효하지 않습니다.", e);
         }

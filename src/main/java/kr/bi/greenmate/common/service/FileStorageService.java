@@ -31,7 +31,7 @@ public class FileStorageService {
     private final ObjectStorageRepository objectStorageRepository;
     private final Tika tika;
 
-    public String uploadFile(MultipartFile file, String subPath) throws IOException {
+    public String uploadFile(MultipartFile file, String subPath) {
         if (file == null || file.isEmpty()) {
             return null;
         }
@@ -51,9 +51,9 @@ public class FileStorageService {
                     file.getInputStream()
             );
             return objectStorageRepository.getDownloadUrl(uploadedFileKey);
-        } catch (IOException e){
+        } catch (IOException e) {
             throw new ApplicationException(FILE_READ_FAILED);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new ApplicationException(FILE_UPLOAD_FAILED);
         }
     }
@@ -61,7 +61,7 @@ public class FileStorageService {
     public void deleteFile(String fileUrl) {
         try {
             objectStorageRepository.delete(fileUrl);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new ApplicationException(FILE_DELETE_FAILED);
         }
     }
@@ -72,7 +72,7 @@ public class FileStorageService {
         }
     }
 
-    private ImageFileExtension getFileExtension(MultipartFile file) throws IOException {
+    private ImageFileExtension getFileExtension(MultipartFile file) {
         String originalFileName = file.getOriginalFilename();
         if (originalFileName == null || originalFileName.isBlank()) {
             throw new ApplicationException(INVALID_FILE_NAME);
@@ -89,7 +89,7 @@ public class FileStorageService {
         return fileExtension;
     }
 
-    private void validateMimeType(MultipartFile file, ImageFileExtension extension) throws IOException {
+    private void validateMimeType(MultipartFile file, ImageFileExtension extension) {
         try (InputStream inputStream = file.getInputStream()) {
             String detectedMimeType = tika.detect(inputStream);
             if (detectedMimeType == null) {

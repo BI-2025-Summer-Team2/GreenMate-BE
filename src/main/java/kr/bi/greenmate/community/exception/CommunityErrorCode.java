@@ -1,4 +1,4 @@
-package kr.bi.greenmate.community;
+package kr.bi.greenmate.community.exception;
 
 import kr.bi.greenmate.common.exception.ErrorCode;
 import lombok.Getter;
