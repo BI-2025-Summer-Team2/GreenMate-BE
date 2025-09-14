@@ -96,7 +96,6 @@ public class GreenTeamPostCommandService {
   @Transactional
   public GreenTeamPostParticipantResponse applyParticipation(Long postId, Long userId) {
     GreenTeamPost post = findPostById(postId);
-    User user = findUserById(userId);
 
     if (participantRepository.existsByPostIdAndUserId(postId, userId)) {
       return GreenTeamPostParticipantResponse.from(true, post.getParticipantCount());
@@ -117,6 +116,7 @@ public class GreenTeamPostCommandService {
     }
 
     // 참가자 저장
+    User user = findUserById(userId);
     participantRepository.save(
         GreenTeamParticipant.builder()
             .post(post)
