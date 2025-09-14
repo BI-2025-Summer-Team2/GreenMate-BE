@@ -3,7 +3,6 @@ package kr.bi.greenmate.green_team_post.controller;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -87,6 +86,21 @@ public class GreenTeamPostController {
       @PathVariable @NotNull @Min(1) Long id
   ) {
     return ResponseEntity.ok(queryService.getPostDetail(id));
+  }
+
+  @Operation(summary = "참여한 환경 활동 모집글 목록 조회", description = "특정 유저가 참여한 환경 활동 모집글 목록을 반환합니다.")
+  @GetMapping("/participants/{userId}")
+  public ResponseEntity<CursorSliceResponse<GreenTeamPostSummaryResponse>> listParticipatedPosts(
+      @AuthenticationPrincipal CustomUserDetails userDetails,
+      @RequestParam(required = false) Long cursorId,
+      @RequestParam(defaultValue = "20")
+      @Min(value = 1, message = "size는 1 이상이어야 합니다.")
+      @Max(value = 100, message = "size는 100 이하여야 합니다.")
+      int size
+  ) {
+    Long userId = userDetails.getId();
+
+    return ResponseEntity.ok(queryService.getParticipatedPostList(userId, cursorId, size));
   }
 
   @Operation(summary = "모집글 좋아요 생성", description = "해당 모집글에 좋아요를 생성합니다.")
