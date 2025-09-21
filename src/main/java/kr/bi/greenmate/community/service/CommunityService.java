@@ -1,24 +1,28 @@
 package kr.bi.greenmate.community.service;
 
 import kr.bi.greenmate.common.annotation.DistributedLock;
+import kr.bi.greenmate.common.dto.CursorSliceResponse;
 import kr.bi.greenmate.common.event.FileRollbackEvent;
-import kr.bi.greenmate.common.exception.ApplicationException;
 import kr.bi.greenmate.common.exception.ApplicationException;
 import kr.bi.greenmate.common.repository.ObjectStorageRepository;
 import kr.bi.greenmate.common.service.FileStorageService;
 import kr.bi.greenmate.community.domain.Community;
 import kr.bi.greenmate.community.domain.CommunityComment;
 import kr.bi.greenmate.community.domain.CommunityImage;
+import kr.bi.greenmate.community.dto.CommunityCommentResponse;
 import kr.bi.greenmate.community.dto.CommunityPostDetailResponse;
 import kr.bi.greenmate.community.dto.CreateCommunityCommentRequest;
 import kr.bi.greenmate.community.dto.CreateCommunityPostRequest;
-import kr.bi.greenmate.community.repository.CommunityLikeRepository;
 import kr.bi.greenmate.community.repository.CommunityCommentRepository;
+import kr.bi.greenmate.community.repository.CommunityLikeRepository;
 import kr.bi.greenmate.community.repository.CommunityRepository;
 import kr.bi.greenmate.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -60,13 +64,28 @@ public class CommunityService {
         communityRepository.save(communityPost);
     }
 
+    public CursorSliceResponse<CommunityCommentResponse> getCommentList(Long postId, Long cursor, int size) {
+        if (!communityRepository.existsById(postId)) {
+            throw new ApplicationException(POST_NOT_FOUND);
+        }
+        PageRequest pageRequest = PageRequest.of(0, size, Sort.by("id").descending());
+
+        Slice<CommunityComment> commentSlice = (cursor == null)
+                ? commentRepository.findAllByCommunity_Id(postId, pageRequest)
+                : commentRepository.findAllByCommunity_IdAndIdLessThan(postId, cursor, pageRequest);
+
+        Slice<CommunityCommentResponse> responseSlice = commentSlice.map(CommunityCommentResponse::from);
+
+        return CursorSliceResponse.from(responseSlice, size, CommunityCommentResponse::getCommentId);
+    }
+
     @DistributedLock(keys = {"#postId"}, prefix = "COMMUNITY")
     public void createComment(Long postId, Long userId, CreateCommunityCommentRequest request, MultipartFile imageFile) {
         Community post = communityRepository.findById(postId).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
         post.increaseCommentCount();
 
         String imageUri = null;
-        if(imageFile!= null && !imageFile.isEmpty()) {
+        if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_COMMENT_IMAGE_DIR);
             eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
             imageUri = getUriPath(imageUrl);
@@ -105,22 +124,19 @@ public class CommunityService {
     }
 
     private CommunityImage createImageEntity(MultipartFile imageFile, Community post) {
-        try {
-            String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_IMAGE_DIR);
-            log.debug("imageUrl: {}", imageUrl);
-            // 롤백 대비
-            eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
+        String imageUrl = fileStorageService.uploadFile(imageFile, COMMUNITY_IMAGE_DIR);
+        log.debug("imageUrl: {}", imageUrl);
+        // 롤백 대비
+        eventPublisher.publishEvent(new FileRollbackEvent(this, imageUrl));
 
-            return CommunityImage.builder()
-                    .community(post)
-                    .imageUrl(getUriPath(imageUrl))
-                    .build();
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException("커뮤니티 게시글의 이미지 파일이 유효하지 않습니다.");
-        }
+        return CommunityImage.builder()
+                .community(post)
+                .imageUrl(getUriPath(imageUrl))
+                .build();
+
     }
 
-    private List<String> getImageUrls(List<CommunityImage> images){
+    private List<String> getImageUrls(List<CommunityImage> images) {
         return images.stream()
                 .map(image -> objectStorageRepository.getDownloadUrl(image.getImageUrl()))
                 .toList();
