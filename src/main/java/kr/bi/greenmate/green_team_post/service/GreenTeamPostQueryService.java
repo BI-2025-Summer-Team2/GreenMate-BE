@@ -53,6 +53,6 @@ public class GreenTeamPostQueryService {
 
     Slice<GreenTeamPostSummaryResponse> mapped = slice.map(GreenTeamPostSummaryResponse::from);
 
-    return CursorSliceResponse.of(mapped, size, GreenTeamPostSummaryResponse::getId);
+    return CursorSliceResponse.from(mapped, size, GreenTeamPostSummaryResponse::getId);
   }
 }

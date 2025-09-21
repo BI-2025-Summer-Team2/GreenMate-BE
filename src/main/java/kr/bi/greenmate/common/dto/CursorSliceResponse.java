@@ -29,7 +29,7 @@ public class CursorSliceResponse<T> {
   @Schema(description = "요청한 size 값", example = "10")
   private final int size;
 
-  public static <T> CursorSliceResponse<T> of(Slice<T> slice, int size,
+  public static <T> CursorSliceResponse<T> from(Slice<T> slice, int size,
       Function<T, Long> idExtractor) {
     List<T> content = slice.getContent();
     Long nextCursor = content.isEmpty() ? null : idExtractor.apply(content.get(content.size() - 1));

@@ -76,7 +76,7 @@ public class CommunityService {
 
         Slice<CommunityCommentResponse> responseSlice = commentSlice.map(CommunityCommentResponse::from);
 
-        return CursorSliceResponse.of(responseSlice, size, CommunityCommentResponse::getCommentId);
+        return CursorSliceResponse.from(responseSlice, size, CommunityCommentResponse::getCommentId);
     }
 
     @DistributedLock(keys = {"#postId"}, prefix = "COMMUNITY")
