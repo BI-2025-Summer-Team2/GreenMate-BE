@@ -63,7 +63,7 @@ public class CommunityService {
         communityRepository.save(communityPost);
     }
 
-    @DistributedLock(keys = {"#postId"}, prefix = "COMMUNITY")
+    @DistributedLock(prefix = "COMMUNITY", keys = {"#postId"})
     public void createComment(Long postId, Long userId, CreateCommunityCommentRequest request, MultipartFile imageFile) {
         Community post = communityRepository.findById(postId).orElseThrow(() -> new ApplicationException(POST_NOT_FOUND));
         post.increaseCommentCount();
